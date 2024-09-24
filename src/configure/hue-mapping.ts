@@ -1,0 +1,43 @@
+export enum SwitchSide { Left = 'left', Right = 'right' }
+export interface HueSensorItem { sensor: string; side?: SwitchSide, bri?: number; }
+export interface HueLightItem extends HueSensorItem { light: string }
+export interface HueGroupItem extends HueSensorItem { group: string }
+
+/* eslint-disable no-multi-spaces */
+export type HueItem = HueLightItem | HueGroupItem;
+export const isLightItem = (i: unknown): i is HueLightItem => (i as HueLightItem).light != null;
+export const isGroupItem = (i: unknown): i is HueGroupItem => (i as HueGroupItem).group != null;
+
+export type HueMapping = Array<HueItem>;
+
+export const hueMapping: HueMapping = [
+  // { sensor: '58', light: '9' },                            // Office - Desk 1
+  { sensor: '83', light: '28' },                           // Office - Table
+  { sensor: '117', group: '4', side: SwitchSide.Left },    // Office
+  { sensor: '117', group: '18', side: SwitchSide.Right },  // Office - Desk
+
+  { sensor: '82', group: '26' },                           // Dining Room - Floor
+  { sensor: '142', light: '21' },                          // Dining Room - Green
+
+  { sensor: '77', group: '19' },                           // Living Room - Floor
+  { sensor: '113', group: '19', side: SwitchSide.Left },   // Living Room - Floor (Switch)
+  { sensor: '155', group: '11' },                          // Living Room - Table
+  { sensor: '110', group: '11', side: SwitchSide.Right },  // Living Room - Table (Switch)
+  { sensor: '110', light: '8', side: SwitchSide.Left },    // Living Room - Window (Switch)
+  { sensor: '137', light: '29', bri: 1 },                  // Living Room - Filament (Button)
+
+  { sensor: '115', side: SwitchSide.Right, light: '15' },  // Guest Bedroom - Table (Switch)
+  { sensor: '106', light: '15' },                          // Guest Bedroom - Table (Button)
+
+  { sensor: '74', light: '7' },                            // Master Bedroom - Table
+  { sensor: '161', light: '7', side: SwitchSide.Right },   // Master Bedroom - Table
+  { sensor: '160', group: '21', side: SwitchSide.Right },  // Master Bedroom - Overhead
+
+  { sensor: '109', group: '7' },                           // Cellar - Front
+  { sensor: '157', light: '27' },                          // Cellar - Workshop
+  { sensor: '156', light: '23' },                          // Cellar - Laundry
+  { sensor: '107', light: '23' },                          // Cellar - Laundry Stairs
+
+  { sensor: '134', light: '11', side: SwitchSide.Right },  // Nursery (Switch)
+  { sensor: '135', light: '11' }                           // Nursery (Button)
+];

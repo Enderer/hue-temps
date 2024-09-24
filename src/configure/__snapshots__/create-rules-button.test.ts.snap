@@ -1,0 +1,106 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`create-rules-button should create Hue Smart button rules 1`] = `
+Array [
+  Object {
+    "actions": Array [
+      Object {
+        "address": "/groups/GROUP_ID/action",
+        "body": Object {
+          "on": false,
+          "transitiontime": 2,
+        },
+        "method": "PUT",
+      },
+    ],
+    "conditions": Array [
+      Object {
+        "address": "/sensors/SCENSOR_ID/state/buttonevent",
+        "operator": "eq",
+        "value": "1000",
+      },
+      Object {
+        "address": "/sensors/SCENSOR_ID/state/lastupdated",
+        "operator": "dx",
+      },
+      Object {
+        "address": "/groups/GROUP_ID/state/any_on",
+        "operator": "eq",
+        "value": "true",
+      },
+    ],
+    "name": "sensor:SCENSOR_ID:off",
+    "recycle": true,
+  },
+  Object {
+    "actions": Array [
+      Object {
+        "address": "/groups/GROUP_ID/action",
+        "body": Object {
+          "scene": "SCENE_DAY",
+          "transitiontime": 2,
+        },
+        "method": "PUT",
+      },
+    ],
+    "conditions": Array [
+      Object {
+        "address": "/sensors/SCENSOR_ID/state/buttonevent",
+        "operator": "eq",
+        "value": "1000",
+      },
+      Object {
+        "address": "/sensors/SCENSOR_ID/state/lastupdated",
+        "operator": "dx",
+      },
+      Object {
+        "address": "/sensors/1/state/daylight",
+        "operator": "eq",
+        "value": "true",
+      },
+      Object {
+        "address": "/groups/GROUP_ID/state/any_on",
+        "operator": "eq",
+        "value": "false",
+      },
+    ],
+    "name": "sensor-SCENSOR_ID-on-day",
+    "recycle": true,
+  },
+  Object {
+    "actions": Array [
+      Object {
+        "address": "/groups/GROUP_ID/action",
+        "body": Object {
+          "scene": "SCENE_NIGHT",
+          "transitiontime": 2,
+        },
+        "method": "PUT",
+      },
+    ],
+    "conditions": Array [
+      Object {
+        "address": "/sensors/SCENSOR_ID/state/buttonevent",
+        "operator": "eq",
+        "value": "1000",
+      },
+      Object {
+        "address": "/sensors/SCENSOR_ID/state/lastupdated",
+        "operator": "dx",
+      },
+      Object {
+        "address": "/sensors/1/state/daylight",
+        "operator": "eq",
+        "value": "false",
+      },
+      Object {
+        "address": "/groups/GROUP_ID/state/any_on",
+        "operator": "eq",
+        "value": "false",
+      },
+    ],
+    "name": "sensor-SCENSOR_ID-on-night",
+    "recycle": true,
+  },
+]
+`;

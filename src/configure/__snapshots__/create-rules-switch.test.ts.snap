@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`create-rules should create switch rules 1`] = `
+Array [
+  Object {
+    "actions": Array [
+      Object {
+        "address": "/groups/GROUP/action",
+        "body": Object {
+          "on": false,
+          "transitiontime": 2,
+        },
+        "method": "PUT",
+      },
+    ],
+    "conditions": Array [
+      Object {
+        "address": "/sensors/SENSOR/state/buttonevent",
+        "operator": "eq",
+        "value": "17",
+      },
+      Object {
+        "address": "/sensors/SENSOR/state/lastupdated",
+        "operator": "dx",
+      },
+    ],
+    "name": "sensor-SENSOR-off",
+    "recycle": true,
+  },
+  Object {
+    "actions": Array [
+      Object {
+        "address": "/groups/GROUP/action",
+        "body": Object {
+          "scene": "SCENE_DAY",
+          "transitiontime": 2,
+        },
+        "method": "PUT",
+      },
+    ],
+    "conditions": Array [
+      Object {
+        "address": "/sensors/SENSOR/state/buttonevent",
+        "operator": "eq",
+        "value": "16",
+      },
+      Object {
+        "address": "/sensors/SENSOR/state/lastupdated",
+        "operator": "dx",
+      },
+      Object {
+        "address": "/sensors/1/state/daylight",
+        "operator": "eq",
+        "value": "true",
+      },
+    ],
+    "name": "sensor-SENSOR-on-day",
+    "recycle": true,
+  },
+  Object {
+    "actions": Array [
+      Object {
+        "address": "/groups/GROUP/action",
+        "body": Object {
+          "scene": "SCENE_NIGHT",
+          "transitiontime": 2,
+        },
+        "method": "PUT",
+      },
+    ],
+    "conditions": Array [
+      Object {
+        "address": "/sensors/SENSOR/state/buttonevent",
+        "operator": "eq",
+        "value": "16",
+      },
+      Object {
+        "address": "/sensors/SENSOR/state/lastupdated",
+        "operator": "dx",
+      },
+      Object {
+        "address": "/sensors/1/state/daylight",
+        "operator": "eq",
+        "value": "false",
+      },
+    ],
+    "name": "sensor-SENSOR-on-night",
+    "recycle": true,
+  },
+]
+`;

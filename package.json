@@ -1,0 +1,42 @@
+{
+  "name": "hue-schedule",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "dist/lib/index.js",
+  "scripts": {
+    "serve": "ts-node ./src/index.ts",
+    "start": "node ./dist/lib/temps/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "chalk": "^5.3.0",
+    "geo-tz": "^8.0.1",
+    "luxon": "^3.4.4",
+    "pino": "^8.19.0",
+    "simple-linear-interpolation": "^1.0.6",
+    "suncalc": "^1.9.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.2",
+    "@types/jest": "^29.5.12",
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^20.11.24",
+    "@types/pino": "^7.0.5",
+    "@types/suncalc": "^1.9.2",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.57.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
