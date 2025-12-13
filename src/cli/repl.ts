@@ -1,0 +1,44 @@
+import readline from 'node:readline';
+import { Command } from 'commander';
+
+export const startRepl = async (program: Command) => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: 'huetemps> ',
+  });
+
+  console.log("Interactive mode. Type 'help' for commands, 'exit' to quit.");
+  rl.prompt();
+
+  for await (const line of rl) {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      rl.prompt();
+      continue;
+    }
+
+    if (trimmed === 'help') {
+      console.log(program.helpInformation().trim());
+      rl.prompt();
+      continue;
+    }
+
+    if (trimmed === 'exit' || trimmed === 'quit') {
+      break;
+    }
+
+    try {
+      const parts = trimmed.split(/\s+/).filter(Boolean);
+      await program.parseAsync(parts, { from: 'user' });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(message.trim());
+    }
+
+    rl.prompt();
+  }
+
+  rl.close();
+};

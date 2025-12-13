@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CLI (list lights)",
+      "program": "${workspaceFolder}/dist/src/cli/index.js",
+      "args": ["list", "lights"],
+      "preLaunchTask": "npm: build",
+      "console": "integratedTerminal",
+      "env": {
+        "LOG_LEVEL": "debug"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CLI (repl)",
+      "program": "${workspaceFolder}/dist/src/cli/index.js",
+      "preLaunchTask": "npm: build",
+      "console": "integratedTerminal"
+    }
+  ]
+}

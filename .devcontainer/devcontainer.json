@@ -1,0 +1,16 @@
+{
+  "name": "huetemps-cli",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-24-bookworm",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.formatOnSave": true,
+        "typescript.tsdk": "/usr/local/share/nvm/versions/node/v24.0.0/lib/node_modules/typescript/lib"
+      },
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+    }
+  },
+  "remoteUser": "node",
+  "postCreateCommand": "npm install"
+}

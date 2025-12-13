@@ -1,0 +1,28 @@
+logging:
+  level: debug
+
+connect:
+  bridgeIp: <<BRIDGE IP ADDRESS>>
+  user: <<USER KEY>>
+
+temps:
+  zoneName: Hue Temps # All lights in this zone will be set to correct temp
+  immediate: false # Will cause the temp to immediatly change rather than gradually
+  latitude: 42.3601 # Latitude to base the current daylight temperature from
+  longitude: -71.0589 # Longitude to base the current daylight temperature from
+
+senors:
+  Office (switch): Office
+  Living Room - Floor (Button): Living Room - Floor
+  Living Room - Floor (Switch) L: Living Room - Floor
+  Living Room - Table (Button): Living Room - Table
+  Living Room - Window (Switch) R: Living Room - Table
+  Living Room - Window (Switch) L: Living Room - Plug
+  Living Room - Filament (Button): Living Room - Filament
+  Dining Room - Wall (Switch): Dining Room
+  Guest Bedroom - Table (Switch): Guest Bedroom
+  Master Bed - Table (Button): Master Bed - Table
+  Master Bed - Left (Switch): Master Bed - Table
+  Master Bed - Right (Switch): Master Bedroom - Overhead
+  Nursery (Switch): Nursery - Table
+  Nursery - Table (Button): Nursery - Table
