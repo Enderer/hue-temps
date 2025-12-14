@@ -1,9 +1,7 @@
+import { getBorderCharacters, table } from 'table';
 import { ApiClient } from '../../api/client.js';
-import { table, getBorderCharacters } from 'table';
+import { getGroups, getLights, getSensors } from '../../api/index.js';
 import { ListTarget } from '../types.js';
-import { getSensors } from '../../api/get-sensors.js';
-import { getGroups } from '../../api/get-group.js';
-import { getLights } from '../../api/get-lights.js';
 
 /**
  * List command prints out a list of resources.

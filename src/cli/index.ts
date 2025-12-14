@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import { pathToFileURL } from 'node:url';
-import { startRepl } from './repl.js';
 import { Argument, Command } from 'commander';
-import { listTargets } from './types.js';
-import * as commands from './commands/index.js';
 import { createApiClient } from '../api/index.js';
 import { loadConfig } from '../shared/config.js';
+import * as commands from './commands/index.js';
+import { startRepl } from './repl.js';
+import { listTargets } from './types.js';
 
 const CONFIG_PATH = './config.yaml';
 
