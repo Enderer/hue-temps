@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { pathToFileURL } from 'node:url';
 import { Argument, Command } from 'commander';
-import { createApiClient } from '../api/index.js';
+import { createApiClient, createStore } from '../api/index.js';
 import { loadConfig } from '../shared/config.js';
 import * as commands from './commands/index.js';
 import { startRepl } from './repl.js';
@@ -12,7 +12,7 @@ const CONFIG_PATH = './config.yaml';
 export const buildProgram = () => {
   const config = loadConfig(CONFIG_PATH);
   const { bridgeIp, user } = config.connect;
-  const client = createApiClient(bridgeIp, user);
+  const store = createStore(createApiClient(bridgeIp, user));
 
   const program = new Command();
 
@@ -41,7 +41,7 @@ export const buildProgram = () => {
     .addArgument(
       new Argument('[target]', listTargets.join(' | ')).choices(listTargets).default('all'),
     )
-    .action(commands.list(client));
+    .action(commands.list(store));
   return program;
 };
 

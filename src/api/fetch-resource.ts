@@ -21,12 +21,13 @@ export interface ResourceFilter<T> {
  * @param resource Name of the type of resource to return
  * @param mapper Mapper function to build the returned object from api response
  */
-export const getResource = <T extends Resource, O = unknown>(
+export const fetchResource = <T extends Resource, O = unknown>(
   resource: string,
   mapper: ResourceMapper<T, O> = defaultMapper,
   filter?: ResourceFilter<T>,
 ) => {
   return async (client: ApiClient): Promise<T[]> => {
+    console.log(`fetchResource [${resource}]`);
     const response = await client.get<Record<string, O>>(`/${resource}`);
     const body = response.body;
     const objects = Object.entries(body).map(([id, o]) => ({ id, o }));
