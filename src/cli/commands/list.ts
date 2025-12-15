@@ -2,7 +2,10 @@ import chalk from 'chalk';
 import { getBorderCharacters, table, TableUserConfig } from 'table';
 import { Light, Store } from '../../api/index.js';
 import * as colors from '../../shared/color.js';
-import { ListTarget } from '../types.js';
+
+export type ListTarget = 'lights' | 'groups' | 'sensors' | 'temps' | 'all';
+
+export const listTargets: ListTarget[] = ['lights', 'groups', 'sensors', 'temps', 'all'];
 
 const BULB_CHAR_ON = '██';
 const BULB_CHAR_OFF = '▒▒';

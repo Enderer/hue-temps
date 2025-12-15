@@ -5,7 +5,6 @@ import { createApiClient, createStore } from '../api/index.js';
 import { loadConfig } from '../shared/config.js';
 import * as commands from './commands/index.js';
 import { startRepl } from './repl.js';
-import { listTargets } from './types.js';
 
 const CONFIG_PATH = './config.yaml';
 
@@ -39,7 +38,9 @@ export const buildProgram = () => {
     .command('list')
     .description('List lights, groups, sensors, or temps')
     .addArgument(
-      new Argument('[target]', listTargets.join(' | ')).choices(listTargets).default('all'),
+      new Argument('[target]', commands.listTargets.join(' | '))
+        .choices(commands.listTargets)
+        .default('all'),
     )
     .action(commands.list(store));
   return program;

@@ -1,5 +1,5 @@
-const KELVIN_MIN = 2000;
-const KELVIN_MAX = 6500;
+const KELVIN_MIN = 1900;
+const KELVIN_MAX = 6700;
 const MIRED_MIN = 153;
 const MIRED_MAX = 500;
 
