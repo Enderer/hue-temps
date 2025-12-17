@@ -4,7 +4,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug CLI (list lights)",
+      "name": "Debug CLI Command",
       "program": "${workspaceFolder}/dist/src/cli/index.js",
       "args": ["list", "lights"],
       "preLaunchTask": "npm: build",
@@ -16,10 +16,22 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug CLI (repl)",
+      "name": "Debug REPL",
       "program": "${workspaceFolder}/dist/src/cli/index.js",
       "preLaunchTask": "npm: build",
       "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Tests",
+      "runtimeArgs": ["--test", "dist/**/*.test.js"],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "npm: build",
+      "console": "integratedTerminal",
+      "env": {
+        "LOG_LEVEL": "debug"
+      }
     }
   ]
 }
