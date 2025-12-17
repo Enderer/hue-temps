@@ -2,9 +2,13 @@
 import { pathToFileURL } from 'node:url';
 import { Argument, Command } from 'commander';
 import { createApiClient, createStore } from '../api/index.js';
+import { loadConfig } from '../shared/config.js';
 import { loadCredentials } from '../shared/credentials.js';
 import * as commands from './commands/index.js';
 import { startRepl } from './repl.js';
+
+const CONFIG_PATH = 'config.yaml';
+const ZONE_NAME_DEFAULT = 'Hue Temps';
 
 const ENV_BRIDGE = 'HUETEMPS_BRIDGE';
 const ENV_USER = 'HUETEMPS_USER';
@@ -24,6 +28,9 @@ export const main = async (argv: string[]) => {
     }
     const { bridgeIp, user } = creds;
     const store = createStore(createApiClient(bridgeIp, user));
+
+    const config = loadConfig(CONFIG_PATH);
+    const tempsZone = config.zoneName ?? ZONE_NAME_DEFAULT;
 
     const program = new Command();
     program
@@ -53,7 +60,7 @@ export const main = async (argv: string[]) => {
           .choices(commands.listTargets)
           .default('all'),
       )
-      .action(commands.list(store));
+      .action(commands.list(tempsZone, store));
 
     if (argv.length === 0) {
       await startRepl(program);

@@ -27,7 +27,6 @@ export const fetchResource = <T extends Resource, O = unknown>(
   filter?: ResourceFilter<T>,
 ) => {
   return async (client: ApiClient): Promise<T[]> => {
-    console.log(`fetchResource [${resource}]`);
     const response = await client.get<Record<string, O>>(`${resource}`);
     const body = response.body;
     const objects = Object.entries(body).map(([id, o]) => ({ id, o }));

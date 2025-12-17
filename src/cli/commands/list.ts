@@ -39,11 +39,10 @@ const getLightIcon = (light: Light): string => {
 
 /**
  * List command prints out a list of resources.
- * @param client
+ * @param zoneName Name of the zone to change temps for
  * @returns
  */
-export const list = (store: Store) => async (target: ListTarget) => {
-  console.log(`list command received: ${target}`);
+export const list = (zoneName: string, store: Store) => async (target: ListTarget) => {
   const outputs: Record<string, string[][]> = {};
 
   if (target === 'lights' || target === 'all') {
@@ -67,10 +66,32 @@ export const list = (store: Store) => async (target: ListTarget) => {
     outputs['groups'] = data;
   }
 
-  // Format
-  Object.values(outputs)
-    .flatMap((o) => o)
-    .flatMap((r) => r.forEach((c, i) => (r[i] = c ?? '-')));
+  if (target === 'temps' || target === 'all') {
+    const groups = await store.groups();
+    const group = groups.find((g) => g.name === zoneName);
+    if (group != null) {
+      const lightIds = group.lightIds ?? [];
+      const allLights = await store.lights();
+      const tempsLights = allLights.filter((l) => lightIds.includes(l.id));
+      const data = tempsLights.map((l) => [l.id, getLightIcon(l), l.name, l.productName]);
+      data.sort((a, b) => a[2].localeCompare(b[2]));
+      outputs['temps'] = data;
+    } else {
+      outputs['temps'] = [];
+    }
+  }
+
+  // Normalize empty cells to dashes
+  Object.values(outputs).forEach((rows) => {
+    rows.forEach((row, rowIndex) => {
+      row.forEach((cell, cellIndex) => {
+        if (cell == null) {
+          row[cellIndex] = '-';
+        }
+      });
+      rows[rowIndex] = row;
+    });
+  });
 
   // Print to console
   const border = getBorderCharacters('norc');
@@ -79,8 +100,8 @@ export const list = (store: Store) => async (target: ListTarget) => {
     border,
     columns: { 0: { width: 3 } },
   };
-
   const out = Object.entries(outputs).map(([content, data]) => {
+    data = data.length === 0 ? [['(none)']] : data;
     return table(data, { ...outConfig, header: { content } });
   });
   console.log(out.join('\n'));
