@@ -8,7 +8,7 @@ describe('fetchGroups', () => {
     mock.restoreAll();
   });
 
-  it('fetches /groups and maps lights to lightIds', async () => {
+  it('fetches groups and maps lights to lightIds', async () => {
     const apiResponse = {
       body: {
         group1: { name: 'Living Room', type: 'Room', lights: ['1', '2'] },
@@ -17,7 +17,7 @@ describe('fetchGroups', () => {
     } satisfies Record<string, unknown>;
 
     const getStub = mock.fn(async (resource: string) => {
-      assert.equal(resource, '/groups');
+      assert.equal(resource, 'groups');
       return apiResponse;
     });
 
@@ -31,6 +31,6 @@ describe('fetchGroups', () => {
     ]);
 
     assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(getStub.mock.calls[0].arguments[0], '/groups');
+    assert.equal(getStub.mock.calls[0].arguments[0], 'groups');
   });
 });

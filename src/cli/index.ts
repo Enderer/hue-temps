@@ -2,59 +2,64 @@
 import { pathToFileURL } from 'node:url';
 import { Argument, Command } from 'commander';
 import { createApiClient, createStore } from '../api/index.js';
-import { loadConfig } from '../shared/config.js';
+import { loadCredentials } from '../shared/credentials.js';
 import * as commands from './commands/index.js';
 import { startRepl } from './repl.js';
 
-const CONFIG_PATH = './config.yaml';
-
-export const buildProgram = () => {
-  const config = loadConfig(CONFIG_PATH);
-  const { bridgeIp, user } = config.connect;
-  const store = createStore(createApiClient(bridgeIp, user));
-
-  const program = new Command();
-
-  program
-    .name('huetemps')
-    .description('Control Hue lights from the terminal')
-    .showHelpAfterError()
-    .exitOverride();
-
-  program.configureOutput({
-    outputError: (message) => {
-      console.error(message.trim());
-    },
-  });
-
-  program
-    .command('refresh')
-    .description('Clear cached data and fetch updated records')
-    .action(() => {
-      console.log('refresh command received');
-    });
-
-  program
-    .command('list')
-    .description('List lights, groups, sensors, or temps')
-    .addArgument(
-      new Argument('[target]', commands.listTargets.join(' | '))
-        .choices(commands.listTargets)
-        .default('all'),
-    )
-    .action(commands.list(store));
-  return program;
-};
+const ENV_BRIDGE = 'HUETEMPS_BRIDGE';
+const ENV_USER = 'HUETEMPS_USER';
+const KEYCHAIN_SERVICE = 'com.huetemps.cli';
+const DEFAULT_PROFILE = 'home';
 
 export const main = async (argv: string[]) => {
-  const program = buildProgram();
-
-  if (argv.length === 0) {
-    await startRepl(program);
-    return;
-  }
-
   try {
+    const creds = await loadCredentials({
+      envBridge: ENV_BRIDGE,
+      envUser: ENV_USER,
+      keychainService: KEYCHAIN_SERVICE,
+      keychainProfile: DEFAULT_PROFILE,
+    });
+    if (creds == null) {
+      throw new Error(`No credentials found.`);
+    }
+    const { bridgeIp, user } = creds;
+    const store = createStore(createApiClient(bridgeIp, user));
+
+    const program = new Command();
+    program
+      .name('huetemps')
+      .description('Control Hue lights from the terminal')
+      .showHelpAfterError()
+      .exitOverride();
+
+    program.configureOutput({
+      outputError: (message) => {
+        console.error(message.trim());
+      },
+    });
+
+    program
+      .command('refresh')
+      .description('Clear cached data and fetch updated records')
+      .action(() => {
+        console.log('refresh command received');
+      });
+
+    program
+      .command('list')
+      .description('List lights, groups, sensors, or temps')
+      .addArgument(
+        new Argument('[target]', commands.listTargets.join(' | '))
+          .choices(commands.listTargets)
+          .default('all'),
+      )
+      .action(commands.list(store));
+
+    if (argv.length === 0) {
+      await startRepl(program);
+      return;
+    }
+
     await program.parseAsync(argv, { from: 'user' });
   } catch (error) {
     const exitCode =

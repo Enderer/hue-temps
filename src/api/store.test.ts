@@ -10,7 +10,7 @@ describe('createStore', () => {
 
   it('fetches resources once, caches results, and supports predicates', async () => {
     const responses: Record<string, unknown> = {
-      '/lights': {
+      lights: {
         body: {
           light1: {
             name: 'Kitchen',
@@ -26,12 +26,12 @@ describe('createStore', () => {
           },
         },
       },
-      '/sensors': {
+      sensors: {
         body: {
           sensor1: { name: 'Motion', productname: 'Hue Motion Sensor' },
         },
       },
-      '/groups': {
+      groups: {
         body: {
           group1: { name: 'Downstairs', type: 'Zone', lights: ['light1', 'light2'] },
         },
@@ -88,7 +88,7 @@ describe('createStore', () => {
     assert.equal(getStub.mock.calls.length, 3);
     assert.deepEqual(
       getStub.mock.calls.map((c) => c.arguments[0]),
-      ['/lights', '/sensors', '/groups'],
+      ['lights', 'sensors', 'groups'],
     );
   });
 });

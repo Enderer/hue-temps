@@ -8,7 +8,7 @@ describe('fetchLights', () => {
     mock.restoreAll();
   });
 
-  it('fetches /lights and maps state, capabilities, and defaults', async () => {
+  it('fetches lights and maps state, capabilities, and defaults', async () => {
     const apiResponse = {
       body: {
         light1: {
@@ -26,7 +26,7 @@ describe('fetchLights', () => {
     } satisfies Record<string, unknown>;
 
     const getStub = mock.fn(async (resource: string) => {
-      assert.equal(resource, '/lights');
+      assert.equal(resource, 'lights');
       return apiResponse;
     });
 
@@ -58,6 +58,6 @@ describe('fetchLights', () => {
     ]);
 
     assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(getStub.mock.calls[0].arguments[0], '/lights');
+    assert.equal(getStub.mock.calls[0].arguments[0], 'lights');
   });
 });

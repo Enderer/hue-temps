@@ -1,13 +1,8 @@
 import fs from 'node:fs';
 import YAML from 'yaml';
 
-export interface ConnectConfig {
-  bridgeIp: string;
-  user: string;
-}
-
 export interface HueTempsConfig {
-  connect: ConnectConfig;
+  zoneName?: string;
 }
 
 export const loadConfig = (configPath: string): HueTempsConfig => {
@@ -18,7 +13,5 @@ export const loadConfig = (configPath: string): HueTempsConfig => {
   const fileContents = fs.readFileSync(configPath, 'utf8');
   const parsed = YAML.parse(fileContents) ?? {};
 
-  return {
-    connect: parsed.connect as ConnectConfig,
-  } satisfies HueTempsConfig;
+  return { zoneName: parsed.zoneName };
 };

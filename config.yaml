@@ -1,10 +1,6 @@
 logging:
   level: debug
 
-connect:
-  bridgeIp: <<BRIDGE IP ADDRESS>>
-  user: <<USER KEY>>
-
 temps:
   zoneName: Hue Temps # All lights in this zone will be set to correct temp
   immediate: false # Will cause the temp to immediatly change rather than gradually

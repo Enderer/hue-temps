@@ -16,9 +16,9 @@ describe('loadConfig', () => {
     assert.equal(existsSpy.mock.calls.length, 1);
   });
 
-  it('reads yaml and returns connect config', () => {
+  it('reads yaml and returns zone name', () => {
     const configPath = 'config.yml';
-    const parsed = { connect: { bridgeIp: '10.0.0.2', user: 'tester' } };
+    const parsed = { zoneName: 'living-room' };
 
     mock.method(fs, 'existsSync', () => true);
     const readSpy = mock.method(fs, 'readFileSync', (path: string, encoding: string) => {
@@ -31,6 +31,24 @@ describe('loadConfig', () => {
     const result = loadConfig(configPath);
 
     assert.deepEqual(result, parsed);
+    assert.equal(readSpy.mock.calls.length, 1);
+    assert.equal(parseSpy.mock.calls.length, 1);
+  });
+
+  it('returns undefined zoneName when YAML.parse yields null', () => {
+    const configPath = 'config.yml';
+
+    mock.method(fs, 'existsSync', () => true);
+    const readSpy = mock.method(fs, 'readFileSync', (path: string, encoding: string) => {
+      assert.equal(path, configPath);
+      assert.equal(encoding, 'utf8');
+      return 'yaml-content';
+    });
+    const parseSpy = mock.method(YAML, 'parse', () => null);
+
+    const result = loadConfig(configPath);
+
+    assert.deepEqual(result, { zoneName: undefined });
     assert.equal(readSpy.mock.calls.length, 1);
     assert.equal(parseSpy.mock.calls.length, 1);
   });

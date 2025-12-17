@@ -15,7 +15,7 @@ describe('fetchResource', () => {
     } satisfies Record<string, unknown>;
 
     const getStub = mock.fn(async (resource: string) => {
-      assert.equal(resource, '/widgets');
+      assert.equal(resource, 'widgets');
       return { body: responseBody };
     });
 

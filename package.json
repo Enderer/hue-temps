@@ -46,8 +46,10 @@
     "typescript-eslint": "8.49.0"
   },
   "dependencies": {
+    "enquirer": "^2.4.1",
     "commander": "^12.1.0",
     "got": "14.6.5",
+    "keytar": "^7.9.0",
     "table": "6.9.0",
     "yaml": "^2.3.4"
   }

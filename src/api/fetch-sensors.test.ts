@@ -8,7 +8,7 @@ describe('fetchSensors', () => {
     mock.restoreAll();
   });
 
-  it('fetches /sensors and maps productname to productName', async () => {
+  it('fetches sensors and maps productname to productName', async () => {
     const apiResponse = {
       body: {
         sensor1: { name: 'Dimmer Switch', productname: 'Hue Dimmer Switch v2' },
@@ -17,7 +17,7 @@ describe('fetchSensors', () => {
     } satisfies Record<string, unknown>;
 
     const getStub = mock.fn(async (resource: string) => {
-      assert.equal(resource, '/sensors');
+      assert.equal(resource, 'sensors');
       return apiResponse;
     });
 
@@ -31,6 +31,6 @@ describe('fetchSensors', () => {
     ]);
 
     assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(getStub.mock.calls[0].arguments[0], '/sensors');
+    assert.equal(getStub.mock.calls[0].arguments[0], 'sensors');
   });
 });

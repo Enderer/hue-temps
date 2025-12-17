@@ -11,6 +11,9 @@ const tsConfigs = tseslint.configs.recommended.map((config) => ({
 
 export default defineConfig([
   {
+    ignores: ['src/**/*.test.{js,mjs,cjs,ts,mts,cts,tsx}'],
+  },
+  {
     files: ['src/**/*.{js,mjs,cjs}'],
     plugins: { js },
     extends: ['js/recommended'],
