@@ -16,7 +16,7 @@ describe('loadConfig', () => {
     assert.equal(existsSpy.mock.calls.length, 1);
   });
 
-  it('reads yaml and returns zone name', () => {
+  it('reads yaml and returns config with zone name', () => {
     const configPath = 'config.yml';
     const parsed = { zoneName: 'living-room' };
 
@@ -30,7 +30,8 @@ describe('loadConfig', () => {
 
     const result = loadConfig(configPath);
 
-    assert.deepEqual(result, parsed);
+    assert.equal(result.zoneName, 'living-room');
+    assert.equal(result.logging.level, 'info');
     assert.equal(readSpy.mock.calls.length, 1);
     assert.equal(parseSpy.mock.calls.length, 1);
   });
@@ -48,7 +49,8 @@ describe('loadConfig', () => {
 
     const result = loadConfig(configPath);
 
-    assert.deepEqual(result, { zoneName: undefined });
+    assert.equal(result.zoneName, undefined);
+    assert.equal(result.logging.level, 'info');
     assert.equal(readSpy.mock.calls.length, 1);
     assert.equal(parseSpy.mock.calls.length, 1);
   });

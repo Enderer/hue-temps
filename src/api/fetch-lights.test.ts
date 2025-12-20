@@ -1,14 +1,23 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it, mock } from 'node:test';
-import { ApiClient } from './client.js';
-import { fetchLights } from './fetch-lights.js';
+import type { ApiClient } from './client.js';
 
 describe('fetchLights', () => {
-  afterEach(() => {
+  afterEach(async () => {
     mock.restoreAll();
+    const loggerModule = await import('../shared/logger.js');
+    loggerModule.__setRootLoggerForTests(null);
   });
 
-  it('fetches lights and maps state, capabilities, and defaults', async () => {
+  it('fetches lights', async () => {
+    const childLogger = { log: mock.fn() } as any;
+    const rootLogger = { child: mock.fn(() => childLogger) } as any;
+
+    const loggerModule = await import('../shared/logger.js');
+    loggerModule.__setRootLoggerForTests(rootLogger);
+
+    const { fetchLights } = await import('./fetch-lights.js');
+
     const apiResponse = {
       body: {
         light1: {
@@ -59,5 +68,10 @@ describe('fetchLights', () => {
 
     assert.equal(getStub.mock.calls.length, 1);
     assert.equal(getStub.mock.calls[0].arguments[0], 'lights');
+
+    assert.equal(rootLogger.child.mock.calls.length, 1);
+    assert.equal(childLogger.log.mock.calls.length, 2);
+
+    loggerModule.__setRootLoggerForTests(null);
   });
 });

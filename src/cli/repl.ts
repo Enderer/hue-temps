@@ -1,5 +1,8 @@
 import readline from 'node:readline';
 import { Command } from 'commander';
+import { createLogger } from '../shared/logger.js';
+
+const log = createLogger('cli.repl');
 
 export const startRepl = async (program: Command) => {
   const rl = readline.createInterface({
@@ -34,6 +37,7 @@ export const startRepl = async (program: Command) => {
       await program.parseAsync(parts, { from: 'user' });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      log.error(`Command failed in REPL: ${message}`);
       console.error(message.trim());
     }
 
@@ -41,4 +45,5 @@ export const startRepl = async (program: Command) => {
   }
 
   rl.close();
+  log.info('REPL closed');
 };

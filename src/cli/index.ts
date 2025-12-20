@@ -4,6 +4,7 @@ import { Argument, Command } from 'commander';
 import { createApiClient, createStore } from '../api/index.js';
 import { loadConfig } from '../shared/config.js';
 import { loadCredentials } from '../shared/credentials.js';
+import { configureLogging, createLogger } from '../shared/logger.js';
 import * as commands from './commands/index.js';
 import { startRepl } from './repl.js';
 
@@ -16,6 +17,8 @@ const KEYCHAIN_SERVICE = 'com.huetemps.cli';
 const DEFAULT_PROFILE = 'home';
 
 export const main = async (argv: string[]) => {
+  let logConfigured = false;
+
   try {
     const creds = await loadCredentials({
       envBridge: ENV_BRIDGE,
@@ -30,7 +33,11 @@ export const main = async (argv: string[]) => {
     const store = createStore(createApiClient(bridgeIp, user));
 
     const config = loadConfig(CONFIG_PATH);
+    configureLogging(config.logging);
+    logConfigured = true;
+    const log = createLogger('cli.main');
     const tempsZone = config.zoneName ?? ZONE_NAME_DEFAULT;
+    log.info(`CLI starting (zone=${tempsZone}, bridge=${bridgeIp})`);
 
     const program = new Command();
     program
@@ -69,6 +76,11 @@ export const main = async (argv: string[]) => {
 
     await program.parseAsync(argv, { from: 'user' });
   } catch (error) {
+    if (logConfigured) {
+      const log = createLogger('cli.main');
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      log.error(`Unhandled error in CLI: ${errorMsg}`);
+    }
     const exitCode =
       typeof error === 'object' && error !== null && 'exitCode' in error
         ? Number((error as { exitCode?: number }).exitCode ?? 1)

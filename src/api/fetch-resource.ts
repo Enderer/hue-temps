@@ -1,4 +1,7 @@
+import { createLogger } from '../shared/logger.js';
 import { ApiClient } from './client.js';
+
+const logger = createLogger('api.fetchResource');
 
 /** A Resource returned from the Hue api */
 export interface Resource {
@@ -24,18 +27,15 @@ export interface ResourceFilter<T> {
 export const fetchResource = <T extends Resource, O = unknown>(
   resource: string,
   mapper: ResourceMapper<T, O> = defaultMapper,
-  filter?: ResourceFilter<T>,
 ) => {
   return async (client: ApiClient): Promise<T[]> => {
+    logger.debug(`Fetching resources for ${resource}`);
     const response = await client.get<Record<string, O>>(`${resource}`);
-    const body = response.body;
-    const objects = Object.entries(body).map(([id, o]) => ({ id, o }));
+    const objects = Object.entries(response.body).map(([id, o]) => ({ id, o }));
     const resources = objects.map((entry) => mapper(entry));
-    const f = filter ?? defaultFilter;
-    return resources.filter(f);
+    logger.info(`Fetched ${resources.length} ${resource}`);
+    return resources;
   };
 };
 
 const defaultMapper = <T extends Resource, O>({ id }: { id: string; o: O }): T => ({ id }) as T;
-
-const defaultFilter = <T>(_: T): boolean => true;

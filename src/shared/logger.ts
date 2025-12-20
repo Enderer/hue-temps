@@ -1,54 +1,95 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-export type Logger = {
+export interface Logger {
+  debug: (message: string) => void;
+  info: (message: string) => void;
+  warn: (message: string) => void;
+  error: (message: string) => void;
+}
+
+export interface LoggingOptions {
   level: LogLevel;
-  debug: (...message: unknown[]) => void;
-  info: (...message: unknown[]) => void;
-  warn: (...message: unknown[]) => void;
-  error: (...message: unknown[]) => void;
+  filePath: string;
+  maxSize: string | number;
+  maxFiles: string | number;
+}
+
+let rootLogger: winston.Logger | null = null;
+
+export const defaultLogFilePath = (): string => {
+  const appName = 'huetemps';
+  switch (process.platform) {
+    case 'darwin':
+      return path.join(os.homedir(), 'Library', 'Logs', appName, `${appName}.log`);
+    case 'win32':
+      return path.join(os.homedir(), 'AppData', 'Local', appName, 'logs', `${appName}.log`);
+    default:
+      return path.join(os.homedir(), '.cache', appName, `${appName}.log`);
+  }
 };
 
-const levelPriority: Record<LogLevel, number> = {
-  debug: 10,
-  info: 20,
-  warn: 30,
-  error: 40,
-};
-
-const isLogLevel = (value: string): value is LogLevel =>
-  ['debug', 'info', 'warn', 'error'].includes(value);
-
-const normalizeLevel = (value?: string): LogLevel => {
-  if (!value) {
-    return 'info';
+export const configureLogging = (options: LoggingOptions): void => {
+  if (rootLogger) {
+    throw new Error('Logging has already been configured');
   }
 
-  return isLogLevel(value.toLowerCase()) ? (value.toLowerCase() as LogLevel) : 'info';
+  const { level, filePath, maxSize, maxFiles } = options;
+
+  const logDir = path.dirname(filePath);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
+  const logFormat = winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.printf(({ timestamp, level, message, module }) => {
+      const mod = module ? `[${module}]` : '';
+      return `${timestamp} ${level.toUpperCase().padEnd(5)} ${mod} ${message}`;
+    }),
+  );
+
+  rootLogger = winston.createLogger({
+    level,
+    transports: [
+      new DailyRotateFile({
+        filename: filePath,
+        datePattern: 'YYYY-MM-DD',
+        maxSize,
+        maxFiles,
+        format: logFormat,
+      }),
+    ],
+  });
 };
 
-const shouldLog = (current: LogLevel, target: LogLevel) =>
-  levelPriority[target] >= levelPriority[current];
+export const createLogger = (moduleName: string): Logger => {
+  let logger: winston.Logger | undefined;
 
-const format = (level: LogLevel, message: unknown[]) => {
-  const timestamp = new Date().toISOString();
-  return [`[${timestamp}]`, `[${level.toUpperCase()}]`, ...message];
-};
-
-export const createLogger = (level?: string): Logger => {
-  const currentLevel = normalizeLevel(level ?? process.env.LOG_LEVEL);
-
-  const logAt = (target: LogLevel, message: unknown[]) => {
-    if (!shouldLog(currentLevel, target)) {
-      return;
+  const log = (level: LogLevel, message: string): void => {
+    if (rootLogger == null) {
+      throw new Error('Logging has not been configured');
     }
-    console[target === 'error' ? 'error' : 'log'](...format(target, message));
+    if (logger == null) {
+      logger = rootLogger.child({ module: moduleName });
+    }
+    logger.log({ level, message, module: moduleName });
   };
 
   return {
-    level: currentLevel,
-    debug: (...message: unknown[]) => logAt('debug', message),
-    info: (...message: unknown[]) => logAt('info', message),
-    warn: (...message: unknown[]) => logAt('warn', message),
-    error: (...message: unknown[]) => logAt('error', message),
+    debug: (message: string) => log('debug', message),
+    info: (message: string) => log('info', message),
+    warn: (message: string) => log('warn', message),
+    error: (message: string) => log('error', message),
   };
+};
+
+/** Test-only helper to inject a fake root logger without configureLogging */
+export const __setRootLoggerForTests = (logger: winston.Logger | null): void => {
+  rootLogger = logger;
 };

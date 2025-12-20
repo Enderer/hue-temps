@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
+import path from 'node:path';
 import readline from 'node:readline';
 import { afterEach, describe, it, mock } from 'node:test';
 import { Command } from 'commander';
+import { configureLogging } from '../shared/logger.js';
 import { startRepl } from './repl.js';
 
 const makeMockRl = (lines: string[]) => {
@@ -26,6 +29,20 @@ describe('startRepl', () => {
   });
 
   it('handles help, runs commands, logs errors, and exits on exit', async () => {
+    try {
+      configureLogging({
+        level: 'error',
+        filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
+        maxSize: '1m',
+        maxFiles: '1d',
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.includes('already been configured')) {
+        throw error;
+      }
+    }
+
     const { rl } = makeMockRl(['help', 'cmd arg1 arg2', 'fail', 'exit']);
     mock.method(readline, 'createInterface', () => rl);
 

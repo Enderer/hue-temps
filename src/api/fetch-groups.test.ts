@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
+import path from 'node:path';
 import { afterEach, describe, it, mock } from 'node:test';
-import { ApiClient } from './client.js';
+import { configureLogging } from '../shared/logger.js';
+import type { ApiClient } from './client.js';
 import { fetchGroups } from './fetch-groups.js';
 
 describe('fetchGroups', () => {
@@ -9,6 +12,20 @@ describe('fetchGroups', () => {
   });
 
   it('fetches groups and maps lights to lightIds', async () => {
+    try {
+      configureLogging({
+        level: 'error',
+        filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
+        maxSize: '1m',
+        maxFiles: '1d',
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.includes('already been configured')) {
+        throw error;
+      }
+    }
+
     const apiResponse = {
       body: {
         group1: { name: 'Living Room', type: 'Room', lights: ['1', '2'] },

@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
+import path from 'node:path';
 import { afterEach, describe, it, mock } from 'node:test';
-import { ApiClient } from './client.js';
+import { configureLogging } from '../shared/logger.js';
+import type { ApiClient } from './client.js';
 import { fetchResource } from './fetch-resource.js';
 
 describe('fetchResource', () => {
@@ -9,6 +12,20 @@ describe('fetchResource', () => {
   });
 
   it('invokes predicate for each mapped item and filters results', async () => {
+    try {
+      configureLogging({
+        level: 'error',
+        filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
+        maxSize: '1m',
+        maxFiles: '1d',
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.includes('already been configured')) {
+        throw error;
+      }
+    }
+
     const responseBody = {
       alpha: { name: 'Alpha' },
       beta: { name: 'Beta' },
@@ -26,17 +43,13 @@ describe('fetchResource', () => {
       name: (o as { name: string }).name,
     });
 
-    const predicate = mock.fn((item: { id: string; name: string }) => item.id === 'beta');
-
-    const fetchWidgets = fetchResource('widgets', mapper, predicate);
+    const fetchWidgets = fetchResource('widgets', mapper);
     const result = await fetchWidgets(client);
 
     assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(predicate.mock.calls.length, 2);
-    assert.deepEqual(
-      predicate.mock.calls.map((c) => c.arguments[0].id),
-      ['alpha', 'beta'],
-    );
-    assert.deepEqual(result, [{ id: 'beta', name: 'Beta' }]);
+    assert.deepEqual(result, [
+      { id: 'alpha', name: 'Alpha' },
+      { id: 'beta', name: 'Beta' },
+    ]);
   });
 });

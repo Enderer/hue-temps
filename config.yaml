@@ -1,5 +1,8 @@
 logging:
-  level: debug
+  # level: debug # debug | info | warn | error
+  # file: ~/.cache/huetemps/huetemps.log # absolute or relative to this config file
+  # maxSize: 10m # rotate after this size
+  # maxFiles: 5 # number of rotated files to keep
 
 temps:
   zoneName: Hue Temps # All lights in this zone will be set to correct temp

@@ -2,6 +2,9 @@ import chalk from 'chalk';
 import { getBorderCharacters, table, TableUserConfig } from 'table';
 import { Light, Store } from '../../api/index.js';
 import * as colors from '../../shared/color.js';
+import { createLogger } from '../../shared/logger.js';
+
+const logger = createLogger('commands.list');
 
 export type ListTarget = 'lights' | 'groups' | 'sensors' | 'temps' | 'all';
 
@@ -43,9 +46,11 @@ const getLightIcon = (light: Light): string => {
  * @returns
  */
 export const list = (zoneName: string, store: Store) => async (target: ListTarget) => {
+  logger.info(`Listing target: ${target} (zone: ${zoneName})`);
   const outputs: Record<string, string[][]> = {};
 
   if (target === 'lights' || target === 'all') {
+    logger.debug('List lights');
     const lights = await store.lights();
     const data = lights.map((l) => [l.id, getLightIcon(l), l.name, l.productName]);
     data.sort((a, b) => a[2].localeCompare(b[2]));
@@ -53,6 +58,7 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
   }
 
   if (target === 'sensors' || target === 'all') {
+    logger.debug('List sensors');
     const sensors = await store.sensors();
     const data = sensors.map((s) => [s.id, s.name, s.productName]);
     data.sort((a, b) => a[1].localeCompare(b[1]));
@@ -60,6 +66,7 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
   }
 
   if (target === 'groups' || target === 'all') {
+    logger.debug('List groups');
     const groups = await store.groups();
     const data = groups.map((g) => [g.id, g.name, g.type ?? '']);
     data.sort((a, b) => a[2].localeCompare(b[2]) || a[0].localeCompare(b[0]));
@@ -67,6 +74,7 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
   }
 
   if (target === 'temps' || target === 'all') {
+    logger.debug('List temps');
     const groups = await store.groups();
     const group = groups.find((g) => g.name === zoneName);
     if (group != null) {
@@ -98,7 +106,7 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
   const outConfig: TableUserConfig = {
     singleLine: true,
     border,
-    columns: { 0: { width: 3 } },
+    columns: { 0: { width: 6 } },
   };
   const out = Object.entries(outputs).map(([content, data]) => {
     data = data.length === 0 ? [['(none)']] : data;

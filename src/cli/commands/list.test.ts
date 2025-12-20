@@ -1,10 +1,29 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it, mock } from 'node:test';
-import { list } from './list.js';
+import { after, afterEach, before, beforeEach, describe, it, mock } from 'node:test';
+import { __setRootLoggerForTests } from '../../shared/logger.js';
+
+const childLogger = { log: mock.fn() } as any;
+const rootLogger = { child: mock.fn(() => childLogger) } as any;
+
+let list: typeof import('./list.js').list;
 
 describe('list command', () => {
+  before(async () => {
+    __setRootLoggerForTests(rootLogger);
+    ({ list } = await import('./list.js'));
+  });
+
+  beforeEach(() => {
+    childLogger.log = mock.fn();
+    rootLogger.child = mock.fn(() => childLogger);
+  });
+
   afterEach(() => {
     mock.restoreAll();
+  });
+
+  after(() => {
+    __setRootLoggerForTests(null);
   });
 
   it('prints sorted tables for all targets and calls store per section', async () => {

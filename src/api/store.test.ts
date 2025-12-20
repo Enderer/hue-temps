@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
+import path from 'node:path';
 import { afterEach, describe, it, mock } from 'node:test';
+import { configureLogging } from '../shared/logger.js';
 import { ApiClient } from './client.js';
 import { createStore } from './store.js';
 
@@ -9,6 +12,20 @@ describe('createStore', () => {
   });
 
   it('fetches resources once, caches results, and supports predicates', async () => {
+    try {
+      configureLogging({
+        level: 'error',
+        filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
+        maxSize: '1m',
+        maxFiles: '1d',
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.includes('already been configured')) {
+        throw error;
+      }
+    }
+
     const responses: Record<string, unknown> = {
       lights: {
         body: {
