@@ -19,19 +19,6 @@ type RawConfig = {
   };
 };
 
-const resolveLogLevel = (value?: LogLevel | string): LogLevel => {
-  const normalized = typeof value === 'string' ? value.toLowerCase() : value;
-  if (
-    normalized === 'debug' ||
-    normalized === 'info' ||
-    normalized === 'warn' ||
-    normalized === 'error'
-  ) {
-    return normalized;
-  }
-  return 'info';
-};
-
 const resolveLoggingConfig = (
   logging: RawConfig['logging'],
   configDir: string,
@@ -39,7 +26,7 @@ const resolveLoggingConfig = (
   const file = logging?.file ?? defaultLogFilePath();
   const filePath = path.isAbsolute(file) ? file : path.join(configDir, file);
   return {
-    level: resolveLogLevel(logging?.level),
+    level: (logging?.level ?? 'info') as LogLevel,
     filePath,
     maxSize: logging?.maxSize ?? '10m',
     maxFiles: logging?.maxFiles ?? '5',

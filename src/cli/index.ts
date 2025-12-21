@@ -12,7 +12,7 @@ const CONFIG_PATH = 'config.yaml';
 const ZONE_NAME_DEFAULT = 'Hue Temps';
 
 const ENV_BRIDGE = 'HUETEMPS_BRIDGE';
-const ENV_USER = 'HUETEMPS_USER';
+const ENV_USER = 'HUE  TEMPS_USER';
 const KEYCHAIN_SERVICE = 'com.huetemps.cli';
 const DEFAULT_PROFILE = 'home';
 
@@ -20,6 +20,7 @@ export const main = async (argv: string[]) => {
   let logConfigured = false;
 
   try {
+    // Load bridge connection credentials
     const creds = await loadCredentials({
       envBridge: ENV_BRIDGE,
       envUser: ENV_USER,
@@ -30,8 +31,10 @@ export const main = async (argv: string[]) => {
       throw new Error(`No credentials found.`);
     }
     const { bridgeIp, user } = creds;
-    const store = createStore(createApiClient(bridgeIp, user));
+    const client = createApiClient(bridgeIp, user);
+    const store = createStore(client);
 
+    // Load config settings
     const config = loadConfig(CONFIG_PATH);
     configureLogging(config.logging);
     logConfigured = true;
@@ -39,6 +42,7 @@ export const main = async (argv: string[]) => {
     const tempsZone = config.zoneName ?? ZONE_NAME_DEFAULT;
     log.info(`CLI starting (zone=${tempsZone}, bridge=${bridgeIp})`);
 
+    // Setup CLI commands
     const program = new Command();
     program
       .name('huetemps')
@@ -68,6 +72,12 @@ export const main = async (argv: string[]) => {
           .default('all'),
       )
       .action(commands.list(tempsZone, store));
+
+    program
+      .command('alert')
+      .description('Make a light alert to help identify it')
+      .addArgument(new Argument('lightId', 'ID of the light to alert'))
+      .action(commands.alert(store));
 
     if (argv.length === 0) {
       await startRepl(program);

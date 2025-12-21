@@ -7,6 +7,7 @@ export interface Store {
   lights: StoreFunction<Light>;
   sensors: StoreFunction<Sensor>;
   groups: StoreFunction<Group>;
+  api: ApiClient;
 }
 
 export interface StoreFunction<T> {
@@ -23,7 +24,7 @@ export interface StoreData {
   groups: Promise<Group[]> | undefined;
 }
 
-export const createStore = (client: ApiClient): Store => {
+export const createStore = (api: ApiClient): Store => {
   const storeData: StoreData = {
     lights: undefined,
     sensors: undefined,
@@ -40,9 +41,9 @@ export const createStore = (client: ApiClient): Store => {
       return lights;
     };
 
-  const lights = resource<Light>('lights', () => fetchLights(client));
-  const sensors = resource<Sensor>('sensors', () => fetchSensors(client));
-  const groups = resource<Group>('groups', () => fetchGroups(client));
+  const lights = resource<Light>('lights', () => fetchLights(api));
+  const sensors = resource<Sensor>('sensors', () => fetchSensors(api));
+  const groups = resource<Group>('groups', () => fetchGroups(api));
 
-  return { lights, sensors, groups };
+  return { lights, sensors, groups, api };
 };

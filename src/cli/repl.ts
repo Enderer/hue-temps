@@ -33,7 +33,7 @@ export const startRepl = async (program: Command) => {
     }
 
     try {
-      const parts = trimmed.split(/\s+/).filter(Boolean);
+      const parts = tokenize(trimmed);
       await program.parseAsync(parts, { from: 'user' });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -46,4 +46,21 @@ export const startRepl = async (program: Command) => {
 
   rl.close();
   log.info('REPL closed');
+};
+
+const tokenize = (input: string): string[] => {
+  const tokens: string[] = [];
+  const regex = /"([^"\\]*(?:\\.[^"\\]*)*)"|'([^'\\]*(?:\\.[^'\\]*)*)'|\S+/g;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(input)) !== null) {
+    const [, dquoted, squoted] = match;
+    if (dquoted != null) {
+      tokens.push(dquoted.replace(/\\(["\\])/g, '$1'));
+    } else if (squoted != null) {
+      tokens.push(squoted.replace(/\\(['\\])/g, '$1'));
+    } else {
+      tokens.push(match[0]);
+    }
+  }
+  return tokens;
 };
