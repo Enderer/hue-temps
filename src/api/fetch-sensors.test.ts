@@ -27,10 +27,8 @@ describe('fetchSensors', () => {
     }
 
     const apiResponse = {
-      body: {
-        sensor1: { name: 'Dimmer Switch', productname: 'Hue Dimmer Switch v2' },
-        sensor2: { name: 'Motion', productname: 'Hue Motion Sensor' },
-      },
+      sensor1: { name: 'Dimmer Switch', productname: 'Hue Dimmer Switch v2' },
+      sensor2: { name: 'Motion', productname: 'Hue Motion Sensor' },
     } satisfies Record<string, unknown>;
 
     const getStub = mock.fn(async (resource: string) => {
@@ -40,7 +38,7 @@ describe('fetchSensors', () => {
 
     const client = { get: getStub } as unknown as ApiClient;
 
-    const sensors = await fetchSensors(client);
+    const sensors = await fetchSensors(async () => client);
 
     assert.deepEqual(sensors, [
       { id: 'sensor1', name: 'Dimmer Switch', productName: 'Hue Dimmer Switch v2' },

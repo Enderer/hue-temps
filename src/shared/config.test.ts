@@ -36,7 +36,7 @@ describe('loadConfig', () => {
     assert.equal(parseSpy.mock.calls.length, 1);
   });
 
-  it('returns undefined zoneName when YAML.parse yields null', () => {
+  it('falls back to default zoneName when YAML.parse yields null', () => {
     const configPath = 'config.yml';
 
     mock.method(fs, 'existsSync', () => true);
@@ -49,7 +49,7 @@ describe('loadConfig', () => {
 
     const result = loadConfig(configPath);
 
-    assert.equal(result.zoneName, undefined);
+    assert.equal(result.zoneName, 'Hue Temps');
     assert.equal(result.logging.level, 'info');
     assert.equal(readSpy.mock.calls.length, 1);
     assert.equal(parseSpy.mock.calls.length, 1);

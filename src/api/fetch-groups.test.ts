@@ -27,10 +27,8 @@ describe('fetchGroups', () => {
     }
 
     const apiResponse = {
-      body: {
-        group1: { name: 'Living Room', type: 'Room', lights: ['1', '2'] },
-        group2: { name: 'Hallway', type: 'Zone', lights: ['3'] },
-      },
+      group1: { name: 'Living Room', type: 'Room', lights: ['1', '2'] },
+      group2: { name: 'Hallway', type: 'Zone', lights: ['3'] },
     } satisfies Record<string, unknown>;
 
     const getStub = mock.fn(async (resource: string) => {
@@ -40,7 +38,7 @@ describe('fetchGroups', () => {
 
     const client = { get: getStub } as unknown as ApiClient;
 
-    const groups = await fetchGroups(client);
+    const groups = await fetchGroups(async () => client);
 
     assert.deepEqual(groups, [
       { id: 'group1', name: 'Living Room', type: 'Room', lightIds: ['1', '2'] },

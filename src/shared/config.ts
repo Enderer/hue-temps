@@ -3,9 +3,19 @@ import path from 'node:path';
 import YAML from 'yaml';
 import { defaultLogFilePath, LoggingOptions, LogLevel } from './logger.js';
 
+const ZONE_NAME_DEFAULT = 'Hue Temps';
+const ENV_BRIDGE = 'HUETEMPS_BRIDGE';
+const ENV_USER = 'HUETEMPS_USER';
+const KEYSTORE_SERVICE = 'com.huetemps.cli';
+const KEYSTORE_PROFILE = 'home';
+
 export interface HueTempsConfig {
-  zoneName?: string;
+  zoneName: string;
   logging: Required<LoggingOptions>;
+  envBridge: string;
+  envUser: string;
+  keystoreService: string;
+  keystoreProfile: string;
 }
 
 type RawConfig = {
@@ -43,7 +53,11 @@ export const loadConfig = (configPath: string): HueTempsConfig => {
   const configDir = path.dirname(path.resolve(configPath));
 
   return {
-    zoneName: parsed.zoneName,
+    zoneName: parsed.zoneName ?? ZONE_NAME_DEFAULT,
     logging: resolveLoggingConfig(parsed.logging, configDir),
+    envBridge: ENV_BRIDGE,
+    envUser: ENV_USER,
+    keystoreService: KEYSTORE_SERVICE,
+    keystoreProfile: KEYSTORE_PROFILE,
   };
 };

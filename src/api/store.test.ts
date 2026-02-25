@@ -28,30 +28,24 @@ describe('createStore', () => {
 
     const responses: Record<string, unknown> = {
       lights: {
-        body: {
-          light1: {
-            name: 'Kitchen',
-            productname: 'Hue A19',
-            state: { on: true, reachable: true, ct: 250 },
-            capabilities: { control: { ct: { min: 200, max: 400 } } },
-          },
-          light2: {
-            name: 'Porch',
-            productname: 'Hue A19',
-            state: { on: false },
-            capabilities: { control: { ct: { min: 153, max: 454 } } },
-          },
+        light1: {
+          name: 'Kitchen',
+          productname: 'Hue A19',
+          state: { on: true, reachable: true, ct: 250 },
+          capabilities: { control: { ct: { min: 200, max: 400 } } },
+        },
+        light2: {
+          name: 'Porch',
+          productname: 'Hue A19',
+          state: { on: false },
+          capabilities: { control: { ct: { min: 153, max: 454 } } },
         },
       },
       sensors: {
-        body: {
-          sensor1: { name: 'Motion', productname: 'Hue Motion Sensor' },
-        },
+        sensor1: { name: 'Motion', productname: 'Hue Motion Sensor' },
       },
       groups: {
-        body: {
-          group1: { name: 'Downstairs', type: 'Zone', lights: ['light1', 'light2'] },
-        },
+        group1: { name: 'Downstairs', type: 'Zone', lights: ['light1', 'light2'] },
       },
     };
 
@@ -62,7 +56,7 @@ describe('createStore', () => {
     });
 
     const client = { get: getStub } as unknown as ApiClient;
-    const store = createStore(client);
+    const store = createStore(async () => client);
 
     const lights = await store.lights();
     const sensors = await store.sensors();

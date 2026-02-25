@@ -33,7 +33,7 @@ describe('fetchResource', () => {
 
     const getStub = mock.fn(async (resource: string) => {
       assert.equal(resource, 'widgets');
-      return { body: responseBody };
+      return responseBody;
     });
 
     const client = { get: getStub } as unknown as ApiClient;
@@ -44,7 +44,7 @@ describe('fetchResource', () => {
     });
 
     const fetchWidgets = fetchResource('widgets', mapper);
-    const result = await fetchWidgets(client);
+    const result = await fetchWidgets(async () => client);
 
     assert.equal(getStub.mock.calls.length, 1);
     assert.deepEqual(result, [

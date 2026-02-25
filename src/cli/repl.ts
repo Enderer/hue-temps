@@ -8,7 +8,7 @@ export const startRepl = async (program: Command) => {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: 'huetemps> ',
+    prompt: 'huetemps |> ',
   });
 
   console.log("Interactive mode. Type 'help' for commands, 'exit' to quit.");

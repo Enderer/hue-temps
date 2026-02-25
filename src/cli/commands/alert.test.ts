@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { afterEach, describe, it, mock } from 'node:test';
 
 const createStore = (lights: any[], apiAlertImpl?: (id: string) => Promise<any>) => {
+  const alertMock = mock.fn(async (id: string) =>
+    apiAlertImpl ? apiAlertImpl(id) : { id, ok: true },
+  );
   return {
     lights: mock.fn(async () => lights),
-    api: {
-      alert: mock.fn(async (id: string) => (apiAlertImpl ? apiAlertImpl(id) : { id, ok: true })),
-    },
+    provider: mock.fn(async () => ({ alert: alertMock })),
+    alertMock,
   } as any;
 };
 
@@ -36,7 +38,7 @@ describe('alert command', () => {
 
     await alert(store)('abc');
 
-    assert.equal(store.api.alert.mock.calls[0].arguments[0], 'abc');
+    assert.equal(store.alertMock.mock.calls[0].arguments[0], 'abc');
     assert.equal(rootLogger.child.mock.calls.length, 1);
     assert.equal(childLogger.log.mock.calls.length, 2);
   });
@@ -52,7 +54,7 @@ describe('alert command', () => {
 
     await alert(store)('Porch');
 
-    assert.equal(store.api.alert.mock.calls[0].arguments[0], '2');
+    assert.equal(store.alertMock.mock.calls[0].arguments[0], '2');
     assert.equal(childLogger.log.mock.calls.length, 2);
     assert.equal(rootLogger.child.mock.calls.length, 1);
   });
@@ -65,7 +67,7 @@ describe('alert command', () => {
 
     await alert(store)('kitchen');
 
-    assert.equal(store.api.alert.mock.calls[0].arguments[0], '1');
+    assert.equal(store.alertMock.mock.calls[0].arguments[0], '1');
     assert.equal(childLogger.log.mock.calls.length, 2);
     assert.equal(rootLogger.child.mock.calls.length, 1);
   });

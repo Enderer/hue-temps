@@ -17,7 +17,7 @@ describe('createApiClient', () => {
 
     const getStub = mock.fn(async (resource: string) => {
       // Simulate the JSON body got would resolve with
-      return fakeResponse;
+      return { body: fakeResponse };
     });
 
     const fakeGot = { get: getStub } as unknown as Got;

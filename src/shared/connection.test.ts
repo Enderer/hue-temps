@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it, mock } from 'node:test';
 import keytar from 'keytar';
-import { loadCredentials, loadEnvCredentials, loadKeystoreCredentials } from './credentials.js';
+import { loadConnection, loadFromEnv, loadFromKeystore } from './connection.js';
 
 const options = {
   envBridge: 'HUE_BRIDGE',
   envUser: 'HUE_USER',
-  keychainService: 'hue',
-  keychainProfile: 'default',
+  keystoreService: 'hue',
+  keystoreProfile: 'default',
 };
 
 const originalEnv = {
@@ -37,7 +37,7 @@ describe('loadCredentials', () => {
 
     const keytarSpy = mock.method(keytar, 'getPassword');
 
-    const creds = await loadCredentials(options);
+    const creds = await loadConnection(options);
 
     assert.deepEqual(creds, { bridgeIp: '10.0.0.1', user: 'tester', source: 'env' });
     assert.equal(keytarSpy.mock.calls.length, 0);
@@ -51,7 +51,7 @@ describe('loadCredentials', () => {
       JSON.stringify({ bridgeIp: '10.0.0.2', user: 'key-user' }),
     );
 
-    const creds = await loadCredentials(options);
+    const creds = await loadConnection(options);
 
     assert.deepEqual(creds, { bridgeIp: '10.0.0.9', user: 'env-user', source: 'env' });
     assert.equal(keytarSpy.mock.calls.length, 0);
@@ -66,13 +66,13 @@ describe('loadCredentials', () => {
       keytar,
       'getPassword',
       async (service: string, account: string) => {
-        assert.equal(service, options.keychainService);
+        assert.equal(service, options.keystoreService);
         assert.equal(account, 'profile:default:connect');
         return stored;
       },
     );
 
-    const creds = await loadCredentials(options);
+    const creds = await loadConnection(options);
 
     assert.deepEqual(creds, { bridgeIp: '10.0.0.2', user: 'fallback', source: 'keychain' });
     assert.equal(keytarSpy.mock.calls.length, 1);
@@ -84,7 +84,7 @@ describe('loadCredentials', () => {
 
     mock.method(keytar, 'getPassword', async () => null);
 
-    const creds = await loadCredentials(options);
+    const creds = await loadConnection(options);
 
     assert.equal(creds, undefined);
   });
@@ -95,7 +95,7 @@ describe('loadEnvCredentials', () => {
     process.env[options.envBridge] = ' 10.0.0.3 ';
     process.env[options.envUser] = ' alice ';
 
-    const creds = loadEnvCredentials(options.envBridge, options.envUser);
+    const creds = loadFromEnv(options.envBridge, options.envUser);
 
     assert.deepEqual(creds, { bridgeIp: '10.0.0.3', user: 'alice', source: 'env' });
   });
@@ -104,7 +104,7 @@ describe('loadEnvCredentials', () => {
     process.env[options.envBridge] = '   ';
     process.env[options.envUser] = 'bob';
 
-    const creds = loadEnvCredentials(options.envBridge, options.envUser);
+    const creds = loadFromEnv(options.envBridge, options.envUser);
 
     assert.equal(creds, undefined);
   });
@@ -115,7 +115,7 @@ describe('loadEnvCredentials', () => {
     // @ts-expect-error intentionally override for test
     process.env = undefined;
 
-    const creds = loadEnvCredentials(options.envBridge, options.envUser);
+    const creds = loadFromEnv(options.envBridge, options.envUser);
 
     // Restore original env for other tests
     // @ts-expect-error restoring mocked value
@@ -129,12 +129,12 @@ describe('loadKeystoreCredentials', () => {
   it('returns credentials when keychain entry is valid', async () => {
     const stored = JSON.stringify({ bridgeIp: '10.0.0.4 ', user: ' carol ' });
     mock.method(keytar, 'getPassword', async (service: string, account: string) => {
-      assert.equal(service, options.keychainService);
+      assert.equal(service, options.keystoreService);
       assert.equal(account, 'profile:default:connect');
       return stored;
     });
 
-    const creds = await loadKeystoreCredentials(options.keychainService, options.keychainProfile);
+    const creds = await loadFromKeystore(options.keystoreService, options.keystoreProfile);
 
     assert.deepEqual(creds, { bridgeIp: '10.0.0.4', user: 'carol', source: 'keychain' });
   });
@@ -142,7 +142,7 @@ describe('loadKeystoreCredentials', () => {
   it('returns undefined when parsed entry lacks fields', async () => {
     mock.method(keytar, 'getPassword', async () => JSON.stringify({ bridgeIp: '10.0.0.5' }));
 
-    const creds = await loadKeystoreCredentials(options.keychainService, options.keychainProfile);
+    const creds = await loadFromKeystore(options.keystoreService, options.keystoreProfile);
 
     assert.equal(creds, undefined);
   });
@@ -150,7 +150,7 @@ describe('loadKeystoreCredentials', () => {
   it('returns undefined when parsed entry is null', async () => {
     mock.method(keytar, 'getPassword', async () => JSON.stringify(null));
 
-    const creds = await loadKeystoreCredentials(options.keychainService, options.keychainProfile);
+    const creds = await loadFromKeystore(options.keystoreService, options.keystoreProfile);
 
     assert.equal(creds, undefined);
   });
@@ -158,7 +158,7 @@ describe('loadKeystoreCredentials', () => {
   it('returns undefined when parsed entry is an empty object', async () => {
     mock.method(keytar, 'getPassword', async () => JSON.stringify({}));
 
-    const creds = await loadKeystoreCredentials(options.keychainService, options.keychainProfile);
+    const creds = await loadFromKeystore(options.keystoreService, options.keystoreProfile);
 
     assert.equal(creds, undefined);
   });
@@ -166,7 +166,7 @@ describe('loadKeystoreCredentials', () => {
   it('returns undefined on malformed JSON', async () => {
     mock.method(keytar, 'getPassword', async () => '{oops');
 
-    const creds = await loadKeystoreCredentials(options.keychainService, options.keychainProfile);
+    const creds = await loadFromKeystore(options.keystoreService, options.keystoreProfile);
 
     assert.equal(creds, undefined);
   });
@@ -176,7 +176,7 @@ describe('loadKeystoreCredentials', () => {
       throw new Error('fail');
     });
 
-    const creds = await loadKeystoreCredentials(options.keychainService, options.keychainProfile);
+    const creds = await loadFromKeystore(options.keystoreService, options.keystoreProfile);
 
     assert.equal(creds, undefined);
   });

@@ -1,5 +1,5 @@
 import { createLogger } from '../shared/logger.js';
-import { ApiClient } from './client.js';
+import { ApiClientProvider } from './client.js';
 
 const logger = createLogger('api.fetchResource');
 
@@ -28,10 +28,11 @@ export const fetchResource = <T extends Resource, O = unknown>(
   resource: string,
   mapper: ResourceMapper<T, O> = defaultMapper,
 ) => {
-  return async (client: ApiClient): Promise<T[]> => {
+  return async (provider: ApiClientProvider): Promise<T[]> => {
     logger.debug(`Fetching resources for ${resource}`);
-    const response = await client.get<Record<string, O>>(`${resource}`);
-    const objects = Object.entries(response.body).map(([id, o]) => ({ id, o }));
+    const client = await provider();
+    const response = await client.get<O>(`${resource}`);
+    const objects = Object.entries(response).map(([id, o]) => ({ id, o }));
     const resources = objects.map((entry) => mapper(entry));
     logger.info(`Fetched ${resources.length} ${resource}`);
     return resources;

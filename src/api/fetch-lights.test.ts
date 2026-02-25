@@ -19,18 +19,16 @@ describe('fetchLights', () => {
     const { fetchLights } = await import('./fetch-lights.js');
 
     const apiResponse = {
-      body: {
-        light1: {
-          name: 'Kitchen',
-          productname: 'Hue A19',
-          state: { reachable: false, on: true, ct: 200 },
-          capabilities: { control: { ct: { min: 153, max: 454 } } },
-        },
-        light2: {
-          name: 'Porch',
-          state: {},
-          capabilities: {},
-        },
+      light1: {
+        name: 'Kitchen',
+        productname: 'Hue A19',
+        state: { reachable: false, on: true, ct: 200 },
+        capabilities: { control: { ct: { min: 153, max: 454 } } },
+      },
+      light2: {
+        name: 'Porch',
+        state: {},
+        capabilities: {},
       },
     } satisfies Record<string, unknown>;
 
@@ -41,7 +39,7 @@ describe('fetchLights', () => {
 
     const client = { get: getStub } as unknown as ApiClient;
 
-    const lights = await fetchLights(client);
+    const lights = await fetchLights(async () => client);
 
     assert.deepEqual(lights, [
       {
