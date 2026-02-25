@@ -6,7 +6,6 @@ import { loadConfig } from '../shared/config.js';
 import { createConnectionLoader } from '../shared/connection.js';
 import { configureLogging, createLogger } from '../shared/logger.js';
 import * as commands from './commands/index.js';
-import { startRepl } from './repl.js';
 
 const logger = createLogger('cli.main');
 
@@ -22,8 +21,7 @@ export const main = async (argv: string[]) => {
 
     // Load config settings
     configureLogging(config.logging);
-
-    logger.info(`CLI starting (zone=${config.zoneName})`);
+    logger.info(`CLI starting. zone:${config.zoneName}`);
 
     // Setup CLI commands
     const program = new Command();
@@ -61,11 +59,6 @@ export const main = async (argv: string[]) => {
       .description('Make a light alert to help identify it')
       .addArgument(new Argument('light', 'Id or name of the light to alert'))
       .action(commands.alert(store));
-
-    // if (argv.length === 0) {
-    //   await startRepl(program);
-    //   return;
-    // }
 
     await program.parseAsync(argv, { from: 'user' });
   } catch (error: any) {
