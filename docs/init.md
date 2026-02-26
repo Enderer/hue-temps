@@ -1,7 +1,9 @@
 ## FEATURE
+
 Build a cli tool in NodeJs that will allow a user to control they Hue lights.
 
 ## Techstack
+
 - NodeJs
 - Typescript
 - Prefer functional style
@@ -17,6 +19,7 @@ Build a cli tool in NodeJs that will allow a user to control they Hue lights.
 - Logging best practices and configuring at project level
 
 ## Features
+
 - CLI for interacting with Hue home setup
 - Compile to js module
 - Deploy to npm
@@ -25,26 +28,23 @@ Build a cli tool in NodeJs that will allow a user to control they Hue lights.
 - Linter
 
 ## Project Structure
+
 package.json
 modules
-  - cli  // The main program entry and cli command logic
-  - api  // Shared functions for accessing Hue API
-  - configure // Logic for module to configure lights and switches
-  - temps // Logic for setting the color temperature of your lights
-  - shared // Project level module for logging, etc..
 
-Only implement the CLI module for now.  We will fill in the rest later
+- cli // The main program entry and cli command logic
+- api // Shared functions for accessing Hue API
+- configure // Logic for module to configure lights and switches
+- temps // Logic for setting the color temperature of your lights
+- shared // Project level module for logging, etc..
 
+Only implement the CLI module for now. We will fill in the rest later
 
 ## CLI COMMANDS
 
 Command
 Description
 Example
-
-huetemps
-Start interactive REPL
-`huetemps`
 
 huetemps list {lights, groups, sensors}
 Lists all items for the given group.
@@ -57,7 +57,5 @@ Lists all items for the given group.
 huetemps refresh
 Clears cached data and fetches updated records from the hub
 `huetemps refresh`
-
-
 
 What other questions and considerations do you have?

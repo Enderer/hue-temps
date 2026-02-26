@@ -60,7 +60,7 @@ export const createApiClientProvider = (connectionLoader: ConnectionLoader): Api
     // Load connection details and create client
     const connection = await connectionLoader.load();
     if (!connection) throw new Error('No connection info found for Hue bridge');
-    client = createApiClient(connection.bridgeIp, connection.user);
+    client = createApiClient(connection.bridge, connection.user);
     return client;
   };
 };

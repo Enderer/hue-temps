@@ -60,6 +60,8 @@ export const main = async (argv: string[]) => {
       .addArgument(new Argument('light', 'Id or name of the light to alert'))
       .action(commands.alert(store));
 
+    commands.connect.init(connectionLoader, program);
+
     await program.parseAsync(argv, { from: 'user' });
   } catch (error: any) {
     const message = error instanceof Error ? error.message : String(error);
