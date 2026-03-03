@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import YAML from 'yaml';
-import { defaultLogFilePath, LoggingOptions, LogLevel } from './logger.js';
+import { createLogger, defaultLogFilePath, LoggingOptions, LogLevel } from './logger.js';
+
+const logger = createLogger('config');
 
 const ZONE_NAME_DEFAULT = 'Hue Temps';
 const ENV_BRIDGE = 'HUETEMPS_BRIDGE';
@@ -44,6 +46,7 @@ const resolveLoggingConfig = (
 };
 
 export const loadConfig = (configPath: string): HueTempsConfig => {
+  logger.info(`loadConfig - start ${configPath}`);
   if (!fs.existsSync(configPath)) {
     throw new Error(`Config file not found at ${configPath}`);
   }
@@ -51,8 +54,7 @@ export const loadConfig = (configPath: string): HueTempsConfig => {
   const fileContents = fs.readFileSync(configPath, 'utf8');
   const parsed: RawConfig = YAML.parse(fileContents) ?? {};
   const configDir = path.dirname(path.resolve(configPath));
-
-  return {
+  const config = {
     zoneName: parsed.zoneName ?? ZONE_NAME_DEFAULT,
     logging: resolveLoggingConfig(parsed.logging, configDir),
     envBridge: ENV_BRIDGE,
@@ -60,4 +62,7 @@ export const loadConfig = (configPath: string): HueTempsConfig => {
     keystoreService: KEYSTORE_SERVICE,
     keystoreProfile: KEYSTORE_PROFILE,
   };
+
+  logger.debug(`loadConfig - complete`);
+  return config;
 };

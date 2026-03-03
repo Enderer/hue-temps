@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-import { pathToFileURL } from 'node:url';
+import { realpathSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Argument, Command } from 'commander';
 import { createApiClientProvider, createStore } from '../api/index.js';
 import { loadConfig } from '../shared/config.js';
@@ -12,14 +14,13 @@ const logger = createLogger('cli.main');
 const CONFIG_PATH = 'config.yaml';
 
 export const main = async (argv: string[]) => {
-  const config = loadConfig(CONFIG_PATH);
-
   try {
+    // Load config and initialize shared dependencies
+    logger.info(`Starting HueTemps CLI`);
+    const config = loadConfig(CONFIG_PATH);
     const connectionLoader = createConnectionLoader(config);
     const provider = createApiClientProvider(connectionLoader);
     const store = createStore(provider);
-
-    // Load config settings
     configureLogging(config.logging);
     logger.info(`CLI starting. zone:${config.zoneName}`);
 
@@ -72,6 +73,17 @@ export const main = async (argv: string[]) => {
   }
 };
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+const isDirectExecution = (): boolean => {
+  const argvPath = process.argv[1];
+  if (argvPath == null || argvPath.length === 0) {
+    return false;
+  }
+
+  const currentModulePath = realpathSync(fileURLToPath(import.meta.url));
+  const invokedPath = realpathSync(resolve(argvPath));
+  return currentModulePath === invokedPath;
+};
+
+if (isDirectExecution()) {
   void main(process.argv.slice(2));
 }
