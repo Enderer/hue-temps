@@ -2,8 +2,6 @@
 
 Practical command-line control for your Philips Hue home.
 
----
-
 ## Table of contents
 
 - [Install](#install)
@@ -189,7 +187,7 @@ This section is for contributors and local customization.
 ```bash
 npm install
 npm run build
-node dist/src/cli/index.js --help
+node dist/src/bin/huetemps.js --help
 ```
 
 ### Link in development mode (recommended)

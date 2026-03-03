@@ -4,7 +4,7 @@
   "description": "CLI to control Philips Hue lights",
   "type": "module",
   "bin": {
-    "huetemps": "./dist/src/cli/index.js"
+    "huetemps": "./dist/src/bin/huetemps.js"
   },
   "exports": "./dist/src/cli/index.js",
   "main": "./dist/src/cli/index.js",
@@ -22,7 +22,7 @@
     "build": "npm run clean && tsc -p tsconfig.json",
     "build:test": "npm run clean && tsc -p tsconfig.test.json",
     "dev": "npm run clean && tsc -p tsconfig.json --watch",
-    "start": "node dist/src/cli/index.js",
+    "start": "node dist/src/bin/huetemps.js",
     "prepare": "npm run build",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",

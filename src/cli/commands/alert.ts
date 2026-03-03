@@ -1,8 +1,17 @@
+import { Argument } from 'commander';
 import { Light } from '../../api/fetch-lights.js';
 import { Store } from '../../api/store.js';
 import { createLogger } from '../../shared/logger.js';
 
 const logger = createLogger('commands.alert');
+
+export const init = (store: Store, program: any) => {
+  program
+    .command('alert')
+    .description('Make a light alert to help identify it')
+    .addArgument(new Argument('light', 'Id or name of the light to alert'))
+    .action(alert(store));
+};
 
 export const alert =
   (store: Store) =>

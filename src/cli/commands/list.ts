@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { Argument } from 'commander';
 import { getBorderCharacters, table, TableUserConfig } from 'table';
 import { Light, Store } from '../../api/index.js';
 import * as colors from '../../shared/color.js';
@@ -16,6 +17,16 @@ const BULB_CHAR_UNREACHABLE = '⧅';
 
 const BULB_COLOR_OFF = { r: 88, g: 88, b: 88 };
 const BULB_COLOR_UNREACHABLE = { r: 255, g: 0, b: 0 };
+
+export const init = (store: Store, program: any, zoneName: string) => {
+  program
+    .command('list')
+    .description('List lights, groups, sensors, or temps')
+    .addArgument(
+      new Argument('[target]', listTargets.join(' | ')).choices(listTargets).default('all'),
+    )
+    .action(list(zoneName, store));
+};
 
 const getLightIcon = (light: Light): string => {
   if (!light.reachable) {
