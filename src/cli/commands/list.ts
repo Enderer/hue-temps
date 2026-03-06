@@ -1,8 +1,7 @@
-import chalk from 'chalk';
 import { Argument } from 'commander';
-import { getBorderCharacters, table, TableUserConfig } from 'table';
-import { Light, Store } from '../../api/index.js';
-import * as colors from '../../shared/color.js';
+import { getBorderCharacters, table } from 'table';
+import { Store } from '../../api/index.js';
+import { lightIcon } from '../../shared/light-icon.js';
 import { createLogger } from '../../shared/logger.js';
 
 const logger = createLogger('commands.list');
@@ -11,12 +10,7 @@ export type ListTarget = 'lights' | 'groups' | 'sensors' | 'temps' | 'all';
 
 export const listTargets: ListTarget[] = ['lights', 'groups', 'sensors', 'temps', 'all'];
 
-const BULB_CHAR_ON = '██';
-const BULB_CHAR_OFF = '▒▒';
-const BULB_CHAR_UNREACHABLE = '⧅';
-
-const BULB_COLOR_OFF = { r: 88, g: 88, b: 88 };
-const BULB_COLOR_UNREACHABLE = { r: 255, g: 0, b: 0 };
+const NAME_WIDTH_MAX = 30;
 
 export const init = (store: Store, program: any, zoneName: string) => {
   program
@@ -28,18 +22,9 @@ export const init = (store: Store, program: any, zoneName: string) => {
     .action(list(zoneName, store));
 };
 
-const getLightIcon = (light: Light): string => {
-  if (!light.reachable) {
-    const { r, g, b } = BULB_COLOR_UNREACHABLE;
-    return chalk.rgb(r, g, b)(BULB_CHAR_UNREACHABLE);
-  }
-  if (!light.on) {
-    const { r, g, b } = BULB_COLOR_OFF;
-    return chalk.rgb(r, g, b)(BULB_CHAR_OFF);
-  }
-  const kelvin = colors.miredToKelvin(light.temp);
-  const rgb = colors.kelvinToRGB(kelvin);
-  return chalk.rgb(rgb.r, rgb.g, rgb.b)(BULB_CHAR_ON);
+const getMaxWidth = (rows: string[][], col: number, max: number): number => {
+  const value = Math.max(0, ...rows.map((row) => row[col].length));
+  return Math.min(value, max);
 };
 
 // for (let mired = 153; mired <= 454; mired += 20) {
@@ -54,7 +39,6 @@ const getLightIcon = (light: Light): string => {
 /**
  * List command prints out a list of resources.
  * @param zoneName Name of the zone to change temps for
- * @returns
  */
 export const list = (zoneName: string, store: Store) => async (target: ListTarget) => {
   logger.info(`Listing target: ${target} (zone: ${zoneName})`);
@@ -63,7 +47,7 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
   if (target === 'lights' || target === 'all') {
     logger.debug('List lights');
     const lights = await store.lights();
-    const data = lights.map((l) => [l.id, getLightIcon(l), l.name, l.productName]);
+    const data = lights.map((l) => [l.id, lightIcon(l), l.name, l.productName]);
     data.sort((a, b) => a[2].localeCompare(b[2]));
     outputs['lights'] = data;
   }
@@ -71,7 +55,7 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
   if (target === 'sensors' || target === 'all') {
     logger.debug('List sensors');
     const sensors = await store.sensors();
-    const data = sensors.map((s) => [s.id, s.name, s.productName]);
+    const data = sensors.map((s) => [s.id, '', s.name, s.productName]);
     data.sort((a, b) => a[1].localeCompare(b[1]));
     outputs['sensors'] = data;
   }
@@ -79,7 +63,7 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
   if (target === 'groups' || target === 'all') {
     logger.debug('List groups');
     const groups = await store.groups();
-    const data = groups.map((g) => [g.id, g.name, g.type ?? '']);
+    const data = groups.map((g) => [g.id, '', g.name, g.type]);
     data.sort((a, b) => a[2].localeCompare(b[2]) || a[0].localeCompare(b[0]));
     outputs['groups'] = data;
   }
@@ -92,7 +76,9 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
       const lightIds = group.lightIds ?? [];
       const allLights = await store.lights();
       const tempsLights = allLights.filter((l) => lightIds.includes(l.id));
-      const data = tempsLights.map((l) => [l.id, getLightIcon(l), l.name, l.productName]);
+      const data = tempsLights.map((l) => {
+        return [l.id, lightIcon(l), l.name, l.productName];
+      });
       data.sort((a, b) => a[2].localeCompare(b[2]));
       outputs['temps'] = data;
     } else {
@@ -100,27 +86,29 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
     }
   }
 
-  // Normalize empty cells to dashes
-  Object.values(outputs).forEach((rows) => {
-    rows.forEach((row, rowIndex) => {
-      row.forEach((cell, cellIndex) => {
-        if (cell == null) {
-          row[cellIndex] = '-';
-        }
-      });
-      rows[rowIndex] = row;
-    });
-  });
+  // Replace nulls with '-'
+  const rows = Object.values(outputs).flat();
+  for (const row of rows) {
+    for (const [c, cell] of row.entries()) {
+      row[c] = cell ?? '-';
+    }
+  }
 
   // Print to console
   const border = getBorderCharacters('norc');
-  const outConfig: TableUserConfig = {
+  const widthName = getMaxWidth(rows, 2, NAME_WIDTH_MAX);
+  const widthDetail = getMaxWidth(rows, 3, NAME_WIDTH_MAX);
+  const outConfig = {
     singleLine: true,
     border,
-    columns: { 0: { width: 6 } },
+    columns: {
+      0: { width: 4 },
+      1: { width: 2 },
+      2: { width: widthName, truncate: widthName },
+      3: { width: widthDetail, truncate: widthDetail },
+    },
   };
   const out = Object.entries(outputs).map(([content, data]) => {
-    data = data.length === 0 ? [['(none)']] : data;
     return table(data, { ...outConfig, header: { content } });
   });
   console.log(out.join('\n'));

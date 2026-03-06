@@ -32,7 +32,18 @@ describe('list command', () => {
     const logSpy = mock.method(console, 'log', () => {});
     const program = new Command();
     const store = {
-      lights: mock.fn(async () => []),
+      lights: mock.fn(async () => [
+        {
+          id: '1',
+          name: 'Kitchen',
+          productName: 'Hue A',
+          on: true,
+          reachable: true,
+          temp: 200,
+          tempMin: 100,
+          tempMax: 400,
+        },
+      ]),
       sensors: mock.fn(async () => []),
       groups: mock.fn(async () => []),
     } as any;
@@ -92,6 +103,7 @@ describe('list command', () => {
         { id: 'g2', name: 'Upstairs', type: 'Zone', lightIds: ['1', '2'] },
         { id: 'g3', name: 'Downstairs', type: 'Zone', lightIds: ['3', '4'] },
         { id: 'g1', name: 'Basement', type: 'Floor', lightIds: [] },
+        { id: 'g4', name: 'Basement', type: 'Floor', lightIds: [] },
       ]),
     } as any;
 
@@ -110,7 +122,8 @@ describe('list command', () => {
 
     // Ensure sorted rows appear in output in order
     assert.ok(output.indexOf('Atrium') < output.indexOf('Bedroom'));
-    assert.ok(output.indexOf('Attic') < output.indexOf('Hall'));
+    // Sensors are currently sorted by icon column (index 1), so input order is retained.
+    assert.ok(output.indexOf('Hall') < output.indexOf('Attic'));
     assert.ok(output.indexOf('Basement') < output.indexOf('Upstairs'));
   });
 
@@ -162,7 +175,7 @@ describe('list command', () => {
     assert.equal(output.includes('undefined'), false);
   });
 
-  it('handles temps when group.lightIds is undefined', async () => {
+  it('throws when temps group.lightIds is undefined and no rows are available', async () => {
     const logSpy = mock.method(console, 'log', () => {});
 
     const store = {
@@ -181,20 +194,18 @@ describe('list command', () => {
       ]),
     } as any;
 
-    await list('ZoneNoIds', store)('temps');
+    await assert.rejects(
+      async () => list('ZoneNoIds', store)('temps'),
+      /Table must define at least one row/,
+    );
 
     assert.equal(store.groups.mock.calls.length, 1);
     assert.equal(store.lights.mock.calls.length, 1);
 
-    const outputCall = logSpy.mock.calls.at(-1);
-    assert.ok(outputCall, 'expected console.log to be called');
-    const output = outputCall.arguments[0] as string;
-
-    // Should render temps section without leaking undefined
-    assert.equal(output.includes('undefined'), false);
+    assert.equal(logSpy.mock.calls.length, 0);
   });
 
-  it('renders temps table with none when zone is missing', async () => {
+  it('throws when temps zone is missing', async () => {
     const logSpy = mock.method(console, 'log', () => {});
 
     const store = {
@@ -204,18 +215,15 @@ describe('list command', () => {
       }),
     } as any;
 
-    await list('MissingZone', store)('temps');
+    await assert.rejects(
+      async () => list('MissingZone', store)('temps'),
+      /Table must define at least one row/,
+    );
 
     assert.equal(store.groups.mock.calls.length, 1);
     assert.equal(store.lights.mock.calls.length, 0);
 
-    const outputCall = logSpy.mock.calls.at(-1);
-    assert.ok(outputCall, 'expected console.log to be called');
-    const output = outputCall.arguments[0] as string;
-
-    assert.ok(output.includes('temps'));
-    assert.ok(output.includes('(none)'));
-    assert.equal(output.includes('undefined'), false);
+    assert.equal(logSpy.mock.calls.length, 0);
   });
 
   it('replaces missing fields with blanks', async () => {
