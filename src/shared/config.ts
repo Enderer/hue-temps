@@ -8,6 +8,9 @@ const ENV_BRIDGE = 'HUETEMPS_BRIDGE';
 const ENV_USER = 'HUETEMPS_USER';
 const KEYSTORE_SERVICE = 'com.huetemps.cli';
 const KEYSTORE_PROFILE = 'home';
+const DEFAULT_LOG_LEVEL = 'info';
+const DEFAULT_LOG_MAX_SIZE = '10m';
+const DEFAULT_LOG_MAX_FILES = '5';
 
 export interface HueTempsConfig {
   zoneName: string;
@@ -29,31 +32,33 @@ type RawConfig = {
   };
 };
 
-const resolveLoggingConfig = (
-  logging: RawConfig['logging'],
-  configDir: string,
-): Required<LoggingOptions> => {
-  const file = logging?.file ?? defaultLogFilePath();
-  const filePath = path.isAbsolute(file) ? file : path.join(configDir, file);
-  return {
-    level: (logging?.level ?? 'info') as LogLevel,
-    filePath,
-    maxSize: logging?.maxSize ?? '10m',
-    maxFiles: logging?.maxFiles ?? '5',
-  };
-};
-
+/**
+ * Loads the configuration from a YAML file, applying defaults and
+ * resolving paths as needed.
+ * @param configPath - Path to the YAML config file
+ */
 export const loadConfig = (configPath: string): HueTempsConfig => {
   if (!fs.existsSync(configPath)) {
     throw new Error(`Config file not found at ${configPath}`);
   }
 
+  // Load and parse the config file
   const fileContents = fs.readFileSync(configPath, 'utf8');
   const parsed: RawConfig = YAML.parse(fileContents) ?? {};
   const configDir = path.dirname(path.resolve(configPath));
+
+  // Resolve logging config
+  const loggingConfig = parsed.logging ?? {};
+  const file = loggingConfig.file ?? defaultLogFilePath();
+  const filePath = path.isAbsolute(file) ? file : path.join(configDir, file);
+  const level = (loggingConfig.level ?? DEFAULT_LOG_LEVEL) as LogLevel;
+  const maxSize = loggingConfig.maxSize ?? DEFAULT_LOG_MAX_SIZE;
+  const maxFiles = loggingConfig.maxFiles ?? DEFAULT_LOG_MAX_FILES;
+  const logging = { level, filePath, maxSize, maxFiles };
+
   const config = {
     zoneName: parsed.zoneName ?? ZONE_NAME_DEFAULT,
-    logging: resolveLoggingConfig(parsed.logging, configDir),
+    logging,
     envBridge: ENV_BRIDGE,
     envUser: ENV_USER,
     keystoreService: KEYSTORE_SERVICE,

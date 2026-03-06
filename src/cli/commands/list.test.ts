@@ -1,16 +1,18 @@
 import assert from 'node:assert/strict';
 import { after, afterEach, before, beforeEach, describe, it, mock } from 'node:test';
+import { Command } from 'commander';
 import { __setRootLoggerForTests } from '../../shared/logger.js';
 
 const childLogger = { log: mock.fn() } as any;
 const rootLogger = { child: mock.fn(() => childLogger) } as any;
 
+let init: typeof import('./list.js').init;
 let list: typeof import('./list.js').list;
 
 describe('list command', () => {
   before(async () => {
     __setRootLoggerForTests(rootLogger);
-    ({ list } = await import('./list.js'));
+    ({ init, list } = await import('./list.js'));
   });
 
   beforeEach(() => {
@@ -24,6 +26,35 @@ describe('list command', () => {
 
   after(() => {
     __setRootLoggerForTests(null);
+  });
+
+  it('init registers list command with target arg and action handler', async () => {
+    const logSpy = mock.method(console, 'log', () => {});
+    const program = new Command();
+    const store = {
+      lights: mock.fn(async () => []),
+      sensors: mock.fn(async () => []),
+      groups: mock.fn(async () => []),
+    } as any;
+
+    init(store, program, 'Zone');
+
+    const listCommand = program.commands.find((cmd) => cmd.name() === 'list');
+    assert.ok(listCommand);
+    assert.equal(listCommand.description(), 'List lights, groups, sensors, or temps');
+    assert.equal(listCommand.registeredArguments.length, 1);
+
+    const targetArg = listCommand.registeredArguments[0];
+    assert.equal(targetArg.name(), 'target');
+    assert.equal(targetArg.defaultValue, 'all');
+
+    // Run through commander to verify the action is wired by init.
+    await program.parseAsync(['list', 'lights'], { from: 'user' });
+
+    assert.equal(store.lights.mock.calls.length, 1);
+    assert.equal(store.sensors.mock.calls.length, 0);
+    assert.equal(store.groups.mock.calls.length, 0);
+    assert.equal(logSpy.mock.calls.length > 0, true);
   });
 
   it('prints sorted tables for all targets and calls store per section', async () => {

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it, mock } from 'node:test';
+import { Command } from 'commander';
 
 const createStore = (lights: any[], apiAlertImpl?: (id: string) => Promise<any>) => {
   const alertMock = mock.fn(async (id: string) =>
@@ -119,5 +120,31 @@ describe('alert command', () => {
 
     await assert.rejects(alert(store)('Porch'), /No light found matching 'Porch'/);
     loggerModule.__setRootLoggerForTests(null);
+  });
+
+  it('init registers alert command with light arg and action handler', async () => {
+    await setupLogger();
+    const program = new Command();
+    const store = createStore([{ id: 'abc', name: 'Kitchen' }]);
+
+    const { init } = await import(`./alert.js?test=${Date.now()}`);
+
+    init(store, program);
+
+    const alertCommand = program.commands.find((cmd) => cmd.name() === 'alert');
+    assert.ok(alertCommand);
+    assert.equal(alertCommand.description(), 'Make a light alert to help identify it');
+    assert.equal(alertCommand.registeredArguments.length, 1);
+
+    const lightArg = alertCommand.registeredArguments[0];
+    assert.equal(lightArg.name(), 'light');
+
+    // Execute via commander parse to verify init action wiring.
+    await program.parseAsync(['alert', 'abc'], { from: 'user' });
+
+    assert.equal(store.lights.mock.calls.length, 1);
+    assert.equal(store.provider.mock.calls.length, 1);
+    assert.equal(store.alertMock.mock.calls.length, 1);
+    assert.equal(store.alertMock.mock.calls[0].arguments[0], 'abc');
   });
 });

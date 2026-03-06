@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it, mock } from 'node:test';
 import got, { Got } from 'got';
-import { createApiClient } from './client.js';
+import { createApiClient, createApiClientProvider } from './client.js';
 
 describe('createApiClient', () => {
   afterEach(async () => {
@@ -78,5 +78,47 @@ describe('createApiClient', () => {
 
     assert.equal(rootLogger.child.mock.calls.length, 1);
     assert.equal(childLogger.log.mock.calls.length, 2);
+  });
+});
+
+describe('createApiClientProvider', () => {
+  afterEach(async () => {
+    mock.restoreAll();
+    const loggerModule = await import('../shared/logger.js');
+    loggerModule.__setRootLoggerForTests(null);
+  });
+
+  it('creates the client once and returns a cached instance', async () => {
+    const getStub = mock.fn(async (_resource: string) => ({ body: {} }));
+    const fakeGot = { get: getStub } as unknown as Got;
+    const extendSpy = mock.method(got, 'extend', () => fakeGot);
+
+    const load = mock.fn(async () => ({ bridge: '192.0.2.10', user: 'test-user', source: 'env' }));
+    const connectionLoader = {
+      load,
+    } as any;
+
+    const provider = createApiClientProvider(connectionLoader);
+
+    const first = await provider();
+    const second = await provider();
+
+    assert.equal(load.mock.calls.length, 1);
+    assert.equal(extendSpy.mock.calls.length, 1);
+    assert.strictEqual(first, second);
+  });
+
+  it('throws when no connection info is available', async () => {
+    const extendSpy = mock.method(got, 'extend', () => ({}) as Got);
+    const load = mock.fn(async () => undefined);
+    const connectionLoader = {
+      load,
+    } as any;
+
+    const provider = createApiClientProvider(connectionLoader);
+
+    await assert.rejects(provider(), /No connection info found for Hue bridge/);
+    assert.equal(load.mock.calls.length, 1);
+    assert.equal(extendSpy.mock.calls.length, 0);
   });
 });
