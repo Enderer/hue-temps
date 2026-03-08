@@ -1,10 +1,21 @@
 import { Command } from 'commander';
+import { renderSplash } from '../splash.js';
+
+const SPLASH_START = 150;
+const SPLASH_END = 440;
+const SPLASH_WIDTH = 69;
+const SPLASH_OFFSET = 20;
 
 export const init = () => {
   const program = new Command()
     .name('huetemps')
     .description('Control Hue lights from the terminal')
     .showHelpAfterError()
+    .action(function (this: Command) {
+      const splash = renderSplash(SPLASH_WIDTH, SPLASH_START, SPLASH_END, SPLASH_OFFSET);
+      console.log(splash);
+      this.outputHelp();
+    })
     .exitOverride();
   return program;
 };

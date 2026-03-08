@@ -27,15 +27,6 @@ const getMaxWidth = (rows: string[][], col: number, max: number): number => {
   return Math.min(value, max);
 };
 
-// for (let mired = 153; mired <= 454; mired += 20) {
-//   const kelvin = color.miredToKelvin(mired);
-//   const rgb = color.miredToRGB(mired);
-//   console.log(
-//     chalk.rgb(rgb.r, rgb.g, rgb.b)('███'),
-//     `${kelvin} K \t ${mired} \t (${rgb.r}, ${rgb.g}, ${rgb.b})`,
-//   );
-// }
-
 /**
  * List command prints out a list of resources.
  * @param zoneName Name of the zone to change temps for
