@@ -1,6 +1,6 @@
 # HueTemps
 
-![HueTemps splash](./assets/readme-splash.svg)
+![HueTemps splash](https://raw.githubusercontent.com/Enderer/hue-temps/main/assets/readme-splash.svg)
 
 Practical command-line control for your Philips Hue home.
 

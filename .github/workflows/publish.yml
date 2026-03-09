@@ -1,0 +1,71 @@
+name: Publish
+on:
+  release:
+    types: [published]
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dist-artifact
+          path: dist
+          if-no-files-found: error
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: dist-artifact
+          path: .
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Pin npm for OIDC publish
+        run: npm i -g npm@11.5.1
+      - run: npm --version
+      - name: Set package version from release tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG#v}"
+          echo "Using version: $VERSION from tag: $TAG"
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+      - name: Ensure no token auth is configured
+        run: |
+          npm config delete //registry.npmjs.org/:_authToken || true
+      - name: Pre-publish sanity checks
+        run: |
+          test -f dist/src/bin/huetemps.js
+          npm pack --dry-run --ignore-scripts
+      - name: Publish to npm
+        env:
+          IS_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            echo "Publishing prerelease to npm with dist-tag next"
+            npm publish --ignore-scripts --access public --provenance --tag next
+          else
+            echo "Publishing release to npm with dist-tag latest"
+            npm publish --ignore-scripts --access public --provenance
+          fi
