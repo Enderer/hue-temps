@@ -36,24 +36,13 @@ jobs:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: dist-artifact
-          path: .
-      - name: Normalize dist artifact path
-        run: |
-          # download-artifact layout can vary based on upload root; normalize to ./dist
-          if [ -d dist-artifact ] && [ ! -d dist ]; then
-            mv dist-artifact dist
-          fi
-          if [ -d src ] && [ ! -d dist/src ]; then
-            mkdir -p dist
-            mv src dist/src
-          fi
+          path: dist
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
       - name: Pin npm for OIDC publish
         run: npm i -g npm@11.5.1
-      - run: npm --version
       - name: Set package version from release tag
         env:
           TAG: ${{ github.event.release.tag_name }}
@@ -64,42 +53,14 @@ jobs:
       - name: Ensure no token auth is configured
         run: |
           npm config delete //registry.npmjs.org/:_authToken || true
-      - name: Pre-publish sanity checks
-        env:
-          TAG: ${{ github.event.release.tag_name }}
-          IS_PRERELEASE: ${{ github.event.release.prerelease }}
-        run: |
-          set -euo pipefail
-          echo "Release tag: ${TAG}"
-          echo "Prerelease: ${IS_PRERELEASE}"
-          echo "Workspace: $(pwd)"
-          node --version
-          npm --version
-          ls -la
-          ls -la dist || true
-          ls -la dist/src || true
-          ls -la dist/src/bin || true
-          if [ ! -f dist/src/bin/huetemps.js ]; then
-            echo "::error::Missing expected entrypoint: dist/src/bin/huetemps.js"
-            echo "Dist tree for debugging:"
-            find dist -maxdepth 5 -print || true
-            exit 1
-          fi
-          npm pack --dry-run --ignore-scripts --loglevel verbose
       - name: Publish to npm
         env:
           IS_PRERELEASE: ${{ github.event.release.prerelease }}
         run: |
-          set -euo pipefail
           if [[ "$IS_PRERELEASE" == "true" ]]; then
             echo "Publishing prerelease to npm with dist-tag next"
-            npm publish --ignore-scripts --access public --provenance --tag next --loglevel verbose
+            npm publish --ignore-scripts --access public --provenance --tag next
           else
             echo "Publishing release to npm with dist-tag latest"
-            npm publish --ignore-scripts --access public --provenance --loglevel verbose
+            npm publish --ignore-scripts --access public --provenance
           fi
-      - name: Dump npm logs on failure
-        if: failure()
-        run: |
-          echo "npm debug logs:"
-          find "$HOME/.npm/_logs" -type f -name "*.log" -print -exec sed -n '1,200p' {} \; || true

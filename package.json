@@ -2,9 +2,17 @@
   "name": "huetemps",
   "version": "2.0.0",
   "description": "CLI to control Philips Hue lights",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Enderer/hue-temps"
+  },
+  "homepage": "https://github.com/Enderer/hue-temps",
+  "bugs": {
+    "url": "https://github.com/Enderer/hue-temps/issues"
+  },
   "type": "module",
   "bin": {
-    "huetemps": "./dist/src/bin/huetemps.js"
+    "huetemps": "dist/src/bin/huetemps.js"
   },
   "exports": "./dist/src/cli/index.js",
   "main": "./dist/src/cli/index.js",
