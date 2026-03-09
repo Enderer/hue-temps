@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, it, mock } from 'node:test';
+import { afterEach, describe, it, vi } from 'vitest';
 import { configureLogging } from '../shared/logger.js';
 import type { ApiClient } from './client.js';
 import { fetchResource } from './fetch-resource.js';
 
 describe('fetchResource', () => {
   afterEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
   });
 
   it('invokes predicate for each mapped item and filters results', async () => {
@@ -31,7 +31,7 @@ describe('fetchResource', () => {
       beta: { name: 'Beta' },
     } satisfies Record<string, unknown>;
 
-    const getStub = mock.fn(async (resource: string) => {
+    const getStub = vi.fn(async (resource: string) => {
       assert.equal(resource, 'widgets');
       return responseBody;
     });
@@ -73,7 +73,7 @@ describe('fetchResource', () => {
       beta: { name: 'Beta' },
     } satisfies Record<string, unknown>;
 
-    const getStub = mock.fn(async (resource: string) => {
+    const getStub = vi.fn(async (resource: string) => {
       assert.equal(resource, 'widgets');
       return responseBody;
     });

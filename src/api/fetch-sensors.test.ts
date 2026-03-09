@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, it, mock } from 'node:test';
+import { afterEach, describe, it, vi } from 'vitest';
 import { configureLogging } from '../shared/logger.js';
 import type { ApiClient } from './client.js';
 import { fetchSensors } from './fetch-sensors.js';
 
 describe('fetchSensors', () => {
   afterEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
   });
 
   it('fetches sensors and maps productname to productName', async () => {
@@ -31,7 +31,7 @@ describe('fetchSensors', () => {
       sensor2: { name: 'Motion', productname: 'Hue Motion Sensor' },
     } satisfies Record<string, unknown>;
 
-    const getStub = mock.fn(async (resource: string) => {
+    const getStub = vi.fn(async (resource: string) => {
       assert.equal(resource, 'sensors');
       return apiResponse;
     });
@@ -46,6 +46,6 @@ describe('fetchSensors', () => {
     ]);
 
     assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(getStub.mock.calls[0].arguments[0], 'sensors');
+    assert.equal(getStub.mock.calls[0][0], 'sensors');
   });
 });

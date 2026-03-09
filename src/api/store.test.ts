@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, it, mock } from 'node:test';
+import { afterEach, describe, it, vi } from 'vitest';
 import { configureLogging } from '../shared/logger.js';
 import { ApiClient } from './client.js';
 import { createStore } from './store.js';
 
 describe('createStore', () => {
   afterEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
   });
 
   it('fetches resources once, caches results, and supports predicates', async () => {
@@ -49,7 +49,7 @@ describe('createStore', () => {
       },
     };
 
-    const getStub = mock.fn(async (resource: string) => {
+    const getStub = vi.fn(async (resource: string) => {
       const response = responses[resource];
       assert.ok(response, `unexpected resource ${resource}`);
       return response;
@@ -98,7 +98,7 @@ describe('createStore', () => {
 
     assert.equal(getStub.mock.calls.length, 3);
     assert.deepEqual(
-      getStub.mock.calls.map((c) => c.arguments[0]),
+      getStub.mock.calls.map((c) => c[0]),
       ['lights', 'sensors', 'groups'],
     );
   });

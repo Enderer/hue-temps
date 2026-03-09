@@ -1,38 +1,38 @@
 import assert from 'node:assert/strict';
-import { after, afterEach, before, beforeEach, describe, it, mock } from 'node:test';
 import { Command } from 'commander';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, it, vi } from 'vitest';
 import { __setRootLoggerForTests } from '../../shared/logger.js';
 
-const childLogger = { log: mock.fn() } as any;
-const rootLogger = { child: mock.fn(() => childLogger) } as any;
+const childLogger = { log: vi.fn() } as any;
+const rootLogger = { child: vi.fn(() => childLogger) } as any;
 
 let init: typeof import('./list.js').init;
 let list: typeof import('./list.js').list;
 
 describe('list command', () => {
-  before(async () => {
+  beforeAll(async () => {
     __setRootLoggerForTests(rootLogger);
     ({ init, list } = await import('./list.js'));
   });
 
   beforeEach(() => {
-    childLogger.log = mock.fn();
-    rootLogger.child = mock.fn(() => childLogger);
+    childLogger.log = vi.fn();
+    rootLogger.child = vi.fn(() => childLogger);
   });
 
   afterEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
   });
 
-  after(() => {
+  afterAll(() => {
     __setRootLoggerForTests(null);
   });
 
   it('init registers list command with target arg and action handler', async () => {
-    const logSpy = mock.method(console, 'log', () => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const program = new Command();
     const store = {
-      lights: mock.fn(async () => [
+      lights: vi.fn(async () => [
         {
           id: '1',
           name: 'Kitchen',
@@ -44,8 +44,8 @@ describe('list command', () => {
           tempMax: 400,
         },
       ]),
-      sensors: mock.fn(async () => []),
-      groups: mock.fn(async () => []),
+      sensors: vi.fn(async () => []),
+      groups: vi.fn(async () => []),
     } as any;
 
     init(store, program, 'Zone');
@@ -70,10 +70,10 @@ describe('list command', () => {
 
   it('prints sorted tables for all targets and calls store per section', async () => {
     // Capture console output
-    const logSpy = mock.method(console, 'log', () => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const store = {
-      lights: mock.fn(async () => [
+      lights: vi.fn(async () => [
         {
           id: '2',
           name: 'Bedroom',
@@ -95,11 +95,11 @@ describe('list command', () => {
           tempMax: 400,
         },
       ]),
-      sensors: mock.fn(async () => [
+      sensors: vi.fn(async () => [
         { id: 's2', name: 'Hall', productName: 'Sensor B' },
         { id: 's1', name: 'Attic', productName: 'Sensor A' },
       ]),
-      groups: mock.fn(async () => [
+      groups: vi.fn(async () => [
         { id: 'g2', name: 'Upstairs', type: 'Zone', lightIds: ['1', '2'] },
         { id: 'g3', name: 'Downstairs', type: 'Zone', lightIds: ['3', '4'] },
         { id: 'g1', name: 'Basement', type: 'Floor', lightIds: [] },
@@ -118,7 +118,7 @@ describe('list command', () => {
     // Console last call logs joined tables
     const outputCall = logSpy.mock.calls.at(-1);
     assert.ok(outputCall, 'expected console.log to be called');
-    const output = outputCall.arguments[0] as string;
+    const output = outputCall[0] as string;
 
     // Ensure sorted rows appear in output in order
     assert.ok(output.indexOf('Atrium') < output.indexOf('Bedroom'));
@@ -128,10 +128,10 @@ describe('list command', () => {
   });
 
   it('renders unreachable light with red unreachable icon', async () => {
-    const logSpy = mock.method(console, 'log', () => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const store = {
-      lights: mock.fn(async () => [
+      lights: vi.fn(async () => [
         {
           id: '5',
           name: 'Garage',
@@ -143,8 +143,8 @@ describe('list command', () => {
           tempMax: 454,
         },
       ]),
-      sensors: mock.fn(async () => []),
-      groups: mock.fn(async () => []),
+      sensors: vi.fn(async () => []),
+      groups: vi.fn(async () => []),
     } as any;
 
     await list('Zone', store)('lights');
@@ -152,15 +152,15 @@ describe('list command', () => {
     assert.equal(store.lights.mock.calls.length, 1);
     const outputCall = logSpy.mock.calls.at(-1);
     assert.ok(outputCall, 'expected console.log to be called');
-    const output = outputCall.arguments[0] as string;
+    const output = outputCall[0] as string;
     assert.ok(output.includes('⧅'));
   });
 
   it('renders groups with missing type as blank', async () => {
-    const logSpy = mock.method(console, 'log', () => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const store = {
-      groups: mock.fn(async () => [{ id: 'g3', name: 'NoType' }]),
+      groups: vi.fn(async () => [{ id: 'g3', name: 'NoType' }]),
     } as any;
 
     await list('Zone', store)('groups');
@@ -168,7 +168,7 @@ describe('list command', () => {
     assert.equal(store.groups.mock.calls.length, 1);
     const outputCall = logSpy.mock.calls.at(-1);
     assert.ok(outputCall, 'expected console.log to be called');
-    const output = outputCall.arguments[0] as string;
+    const output = outputCall[0] as string;
 
     assert.ok(output.includes('NoType'));
     assert.ok(output.includes('g3'));
@@ -176,11 +176,11 @@ describe('list command', () => {
   });
 
   it('throws when temps group.lightIds is undefined and no rows are available', async () => {
-    const logSpy = mock.method(console, 'log', () => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const store = {
-      groups: mock.fn(async () => [{ id: 'g1', name: 'ZoneNoIds' }]),
-      lights: mock.fn(async () => [
+      groups: vi.fn(async () => [{ id: 'g1', name: 'ZoneNoIds' }]),
+      lights: vi.fn(async () => [
         {
           id: '10',
           name: 'Spare',
@@ -206,11 +206,11 @@ describe('list command', () => {
   });
 
   it('throws when temps zone is missing', async () => {
-    const logSpy = mock.method(console, 'log', () => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const store = {
-      groups: mock.fn(async () => [{ id: 'g9', name: 'OtherZone', lightIds: [] }]),
-      lights: mock.fn(async () => {
+      groups: vi.fn(async () => [{ id: 'g9', name: 'OtherZone', lightIds: [] }]),
+      lights: vi.fn(async () => {
         throw new Error('lights should not be called when no zone match');
       }),
     } as any;
@@ -227,10 +227,10 @@ describe('list command', () => {
   });
 
   it('replaces missing fields with blanks', async () => {
-    const logSpy = mock.method(console, 'log', () => {});
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const store = {
-      lights: mock.fn(async () => [
+      lights: vi.fn(async () => [
         {
           id: '7',
           name: 'Loft',
@@ -242,15 +242,15 @@ describe('list command', () => {
           tempMax: 454,
         },
       ]),
-      sensors: mock.fn(async () => []),
-      groups: mock.fn(async () => []),
+      sensors: vi.fn(async () => []),
+      groups: vi.fn(async () => []),
     } as any;
 
     await list('Zone', store)('lights');
 
     const outputCall = logSpy.mock.calls.at(-1);
     assert.ok(outputCall, 'expected console.log to be called');
-    const output = outputCall.arguments[0] as string;
+    const output = outputCall[0] as string;
 
     assert.ok(output.includes('Loft'));
     assert.equal(output.includes('undefined'), false);

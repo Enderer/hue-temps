@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it, mock } from 'node:test';
+import { afterEach, describe, it, vi } from 'vitest';
 import type { ApiClient } from './client.js';
 
 describe('fetchLights', () => {
   afterEach(async () => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
     const loggerModule = await import('../shared/logger.js');
     loggerModule.__setRootLoggerForTests(null);
   });
 
   it('fetches lights', async () => {
-    const childLogger = { log: mock.fn() } as any;
-    const rootLogger = { child: mock.fn(() => childLogger) } as any;
+    const childLogger = { log: vi.fn() } as any;
+    const rootLogger = { child: vi.fn(() => childLogger) } as any;
 
     const loggerModule = await import('../shared/logger.js');
     loggerModule.__setRootLoggerForTests(rootLogger);
@@ -32,7 +32,7 @@ describe('fetchLights', () => {
       },
     } satisfies Record<string, unknown>;
 
-    const getStub = mock.fn(async (resource: string) => {
+    const getStub = vi.fn(async (resource: string) => {
       assert.equal(resource, 'lights');
       return apiResponse;
     });
@@ -65,7 +65,7 @@ describe('fetchLights', () => {
     ]);
 
     assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(getStub.mock.calls[0].arguments[0], 'lights');
+    assert.equal(getStub.mock.calls[0][0], 'lights');
 
     assert.equal(rootLogger.child.mock.calls.length, 1);
     assert.equal(childLogger.log.mock.calls.length, 2);

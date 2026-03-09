@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, it, mock } from 'node:test';
+import { afterEach, describe, it, vi } from 'vitest';
 import { configureLogging } from '../shared/logger.js';
 import type { ApiClient } from './client.js';
 import { fetchGroups } from './fetch-groups.js';
 
 describe('fetchGroups', () => {
   afterEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
   });
 
   it('fetches groups and maps lights to lightIds', async () => {
@@ -31,7 +31,7 @@ describe('fetchGroups', () => {
       group2: { name: 'Hallway', type: 'Zone', lights: ['3'] },
     } satisfies Record<string, unknown>;
 
-    const getStub = mock.fn(async (resource: string) => {
+    const getStub = vi.fn(async (resource: string) => {
       assert.equal(resource, 'groups');
       return apiResponse;
     });
@@ -46,6 +46,6 @@ describe('fetchGroups', () => {
     ]);
 
     assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(getStub.mock.calls[0].arguments[0], 'groups');
+    assert.equal(getStub.mock.calls[0][0], 'groups');
   });
 });

@@ -1,5 +1,14 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it, mock } from 'node:test';
+import { afterEach, describe, it, vi } from 'vitest';
+
+vi.mock('keytar', () => ({
+  default: {
+    getPassword: vi.fn(async () => null),
+    setPassword: vi.fn(async () => undefined),
+    deletePassword: vi.fn(async () => true),
+  },
+}));
+
 import keytar from 'keytar';
 import {
   clearConnection,
@@ -37,7 +46,7 @@ const clearTestEnv = () => {
 
 describe('connection', () => {
   afterEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
     clearTestEnv();
   });
 
@@ -64,11 +73,13 @@ describe('connection', () => {
   });
 
   it('loadFromKeystore returns trimmed values and source keystore', async () => {
-    const getSpy = mock.method(keytar, 'getPassword', async (_service: string, account: string) => {
-      if (account.endsWith('bridge')) return ' 192.0.2.20 ';
-      if (account.endsWith('user')) return ' test-user-20 ';
-      return null;
-    });
+    const getSpy = vi
+      .spyOn(keytar, 'getPassword')
+      .mockImplementation(async (_service: string, account: string) => {
+        if (account.endsWith('bridge')) return ' 192.0.2.20 ';
+        if (account.endsWith('user')) return ' test-user-20 ';
+        return null;
+      });
 
     const result = await loadFromKeystore(options.keystoreService, options.keystoreProfile);
 
@@ -81,7 +92,7 @@ describe('connection', () => {
   });
 
   it('loadFromKeystore returns undefined when no values are stored', async () => {
-    const getSpy = mock.method(keytar, 'getPassword', async () => null);
+    const getSpy = vi.spyOn(keytar, 'getPassword').mockImplementation(async () => null);
 
     const result = await loadFromKeystore(options.keystoreService, options.keystoreProfile);
 
@@ -93,7 +104,7 @@ describe('connection', () => {
     process.env[options.envBridge] = '192.0.2.30';
     process.env[options.envUser] = 'user-30';
 
-    const getSpy = mock.method(keytar, 'getPassword', async () => {
+    const getSpy = vi.spyOn(keytar, 'getPassword').mockImplementation(async () => {
       throw new Error('keystore should not be used when env values exist');
     });
 
@@ -111,11 +122,13 @@ describe('connection', () => {
     delete process.env[options.envBridge];
     delete process.env[options.envUser];
 
-    const getSpy = mock.method(keytar, 'getPassword', async (_service: string, account: string) => {
-      if (account.endsWith('bridge')) return '192.0.2.40';
-      if (account.endsWith('user')) return 'user-40';
-      return null;
-    });
+    const getSpy = vi
+      .spyOn(keytar, 'getPassword')
+      .mockImplementation(async (_service: string, account: string) => {
+        if (account.endsWith('bridge')) return '192.0.2.40';
+        if (account.endsWith('user')) return 'user-40';
+        return null;
+      });
 
     const result = await listConnection(options);
 
@@ -130,7 +143,7 @@ describe('connection', () => {
   it('loadConnection returns undefined when both values are missing', async () => {
     delete process.env[options.envBridge];
     delete process.env[options.envUser];
-    mock.method(keytar, 'getPassword', async () => null);
+    vi.spyOn(keytar, 'getPassword').mockImplementation(async () => null);
 
     const result = await loadConnection(options);
 
@@ -157,18 +170,18 @@ describe('connection', () => {
   });
 
   it('setConnection validates and stores bridge and user', async () => {
-    const setSpy = mock.method(keytar, 'setPassword', async () => undefined);
+    const setSpy = vi.spyOn(keytar, 'setPassword').mockImplementation(async () => undefined);
 
     await setConnection(options, 'bridge', '192.0.2.70');
     await setConnection(options, 'user', 'user-70');
 
     assert.equal(setSpy.mock.calls.length, 2);
-    assert.deepEqual(setSpy.mock.calls[0].arguments, [
+    assert.deepEqual(setSpy.mock.calls[0], [
       options.keystoreService,
       'profile:default:connect:bridge',
       '192.0.2.70',
     ]);
-    assert.deepEqual(setSpy.mock.calls[1].arguments, [
+    assert.deepEqual(setSpy.mock.calls[1], [
       options.keystoreService,
       'profile:default:connect:user',
       'user-70',
@@ -176,7 +189,7 @@ describe('connection', () => {
   });
 
   it('setConnection rejects invalid fields and invalid values', async () => {
-    const setSpy = mock.method(keytar, 'setPassword', async () => undefined);
+    const setSpy = vi.spyOn(keytar, 'setPassword').mockImplementation(async () => undefined);
 
     await assert.rejects(setConnection(options, 'other', 'x'), /Invalid field/);
     await assert.rejects(
@@ -189,7 +202,7 @@ describe('connection', () => {
   });
 
   it('setConnection rejects null field or null value', async () => {
-    const setSpy = mock.method(keytar, 'setPassword', async () => undefined);
+    const setSpy = vi.spyOn(keytar, 'setPassword').mockImplementation(async () => undefined);
 
     await assert.rejects(
       setConnection(options, null as unknown as string, '192.0.2.90'),
@@ -204,16 +217,16 @@ describe('connection', () => {
   });
 
   it('clearConnection deletes bridge and user from keystore', async () => {
-    const delSpy = mock.method(keytar, 'deletePassword', async () => true);
+    const delSpy = vi.spyOn(keytar, 'deletePassword').mockImplementation(async () => true);
 
     await clearConnection(options);
 
     assert.equal(delSpy.mock.calls.length, 2);
-    assert.deepEqual(delSpy.mock.calls[0].arguments, [
+    assert.deepEqual(delSpy.mock.calls[0], [
       options.keystoreService,
       'profile:default:connect:bridge',
     ]);
-    assert.deepEqual(delSpy.mock.calls[1].arguments, [
+    assert.deepEqual(delSpy.mock.calls[1], [
       options.keystoreService,
       'profile:default:connect:user',
     ]);
@@ -223,13 +236,15 @@ describe('connection', () => {
     delete process.env[options.envBridge];
     delete process.env[options.envUser];
 
-    const getSpy = mock.method(keytar, 'getPassword', async (_service: string, account: string) => {
-      if (account.endsWith('bridge')) return '192.0.2.80';
-      if (account.endsWith('user')) return 'user-80';
-      return null;
-    });
-    const setSpy = mock.method(keytar, 'setPassword', async () => undefined);
-    const delSpy = mock.method(keytar, 'deletePassword', async () => true);
+    const getSpy = vi
+      .spyOn(keytar, 'getPassword')
+      .mockImplementation(async (_service: string, account: string) => {
+        if (account.endsWith('bridge')) return '192.0.2.80';
+        if (account.endsWith('user')) return 'user-80';
+        return null;
+      });
+    const setSpy = vi.spyOn(keytar, 'setPassword').mockImplementation(async () => undefined);
+    const delSpy = vi.spyOn(keytar, 'deletePassword').mockImplementation(async () => true);
 
     const loader = createConnectionLoader(options);
 

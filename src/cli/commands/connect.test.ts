@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it, mock } from 'node:test';
 import { Command } from 'commander';
+import { afterEach, describe, it, vi } from 'vitest';
 import type { ConnectionLoader } from '../../shared/connection.js';
 import { connectClear, connectList, connectSet, init } from './connect.js';
 
@@ -9,11 +9,11 @@ const flush = () => new Promise<void>((resolve) => setImmediate(resolve));
 const createLoader = (
   listResult?: { bridge?: string; user?: string; source?: string } | undefined,
 ) => {
-  const load = mock.fn(async () => undefined);
-  const list = mock.fn(async () => listResult);
-  const setBridge = mock.fn(async (_bridge: string) => {});
-  const setUser = mock.fn(async (_user: string) => {});
-  const clear = mock.fn(async () => {});
+  const load = vi.fn(async () => undefined);
+  const list = vi.fn(async () => listResult);
+  const setBridge = vi.fn(async (_bridge: string) => {});
+  const setUser = vi.fn(async (_user: string) => {});
+  const clear = vi.fn(async () => {});
 
   const loader = {
     load,
@@ -27,8 +27,8 @@ const createLoader = (
 };
 
 const setupLogger = async () => {
-  const childLogger = { log: mock.fn() } as any;
-  const rootLogger = { child: mock.fn(() => childLogger) } as any;
+  const childLogger = { log: vi.fn() } as any;
+  const rootLogger = { child: vi.fn(() => childLogger) } as any;
   const loggerModule = await import('../../shared/logger.js');
   loggerModule.__setRootLoggerForTests(rootLogger);
   return { childLogger, rootLogger, loggerModule };
@@ -36,7 +36,7 @@ const setupLogger = async () => {
 
 describe('connect command', () => {
   afterEach(async () => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
     const loggerModule = await import('../../shared/logger.js');
     loggerModule.__setRootLoggerForTests(null);
   });
@@ -44,7 +44,7 @@ describe('connect command', () => {
   it('connectSet bridge saves bridge and lists current connection', async () => {
     await setupLogger();
     const output: string[] = [];
-    mock.method(console, 'log', (...args: unknown[]) => {
+    vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
     });
 
@@ -58,7 +58,7 @@ describe('connect command', () => {
     await flush();
 
     assert.equal(setBridge.mock.calls.length, 1);
-    assert.equal(setBridge.mock.calls[0].arguments[0], '192.0.2.1');
+    assert.equal(setBridge.mock.calls[0][0], '192.0.2.1');
     assert.equal(setUser.mock.calls.length, 0);
     assert.equal(list.mock.calls.length, 1);
 
@@ -72,7 +72,7 @@ describe('connect command', () => {
   it('connectSet user saves user and lists current connection', async () => {
     await setupLogger();
     const output: string[] = [];
-    mock.method(console, 'log', (...args: unknown[]) => {
+    vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
     });
 
@@ -86,7 +86,7 @@ describe('connect command', () => {
     await flush();
 
     assert.equal(setUser.mock.calls.length, 1);
-    assert.equal(setUser.mock.calls[0].arguments[0], 'abc-123');
+    assert.equal(setUser.mock.calls[0][0], 'abc-123');
     assert.equal(setBridge.mock.calls.length, 0);
     assert.equal(list.mock.calls.length, 1);
 
@@ -97,7 +97,7 @@ describe('connect command', () => {
   it('connectList prints no info found when list returns undefined', async () => {
     await setupLogger();
     const output: string[] = [];
-    mock.method(console, 'log', (...args: unknown[]) => {
+    vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
     });
 
@@ -113,7 +113,7 @@ describe('connect command', () => {
   it('connectList renders fallback values for missing fields', async () => {
     await setupLogger();
     const output: string[] = [];
-    mock.method(console, 'log', (...args: unknown[]) => {
+    vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
     });
 
@@ -129,7 +129,7 @@ describe('connect command', () => {
   it('connectClear clears values and lists current connection', async () => {
     await setupLogger();
     const output: string[] = [];
-    mock.method(console, 'log', (...args: unknown[]) => {
+    vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
     });
 

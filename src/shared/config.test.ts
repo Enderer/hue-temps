@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { afterEach, describe, it, mock } from 'node:test';
+import { afterEach, describe, it, vi } from 'vitest';
 import YAML from 'yaml';
 import { loadConfig } from './config.js';
 
 describe('loadConfig', () => {
   afterEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
   });
 
   it('throws when file is missing', () => {
-    const existsSpy = mock.method(fs, 'existsSync', () => false);
+    const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation(() => false);
 
     assert.throws(() => loadConfig('missing.yml'), /Config file not found/);
     assert.equal(existsSpy.mock.calls.length, 1);
@@ -21,13 +21,15 @@ describe('loadConfig', () => {
     const configPath = 'config.yml';
     const parsed = { zoneName: 'living-room' };
 
-    mock.method(fs, 'existsSync', () => true);
-    const readSpy = mock.method(fs, 'readFileSync', (path: string, encoding: string) => {
-      assert.equal(path, configPath);
-      assert.equal(encoding, 'utf8');
-      return 'yaml-content';
-    });
-    const parseSpy = mock.method(YAML, 'parse', () => parsed);
+    vi.spyOn(fs, 'existsSync').mockImplementation(() => true);
+    const readSpy = vi
+      .spyOn(fs, 'readFileSync')
+      .mockImplementation((path: string, encoding: string) => {
+        assert.equal(path, configPath);
+        assert.equal(encoding, 'utf8');
+        return 'yaml-content';
+      });
+    const parseSpy = vi.spyOn(YAML, 'parse').mockImplementation(() => parsed);
 
     const result = loadConfig(configPath);
 
@@ -40,13 +42,15 @@ describe('loadConfig', () => {
   it('falls back to default zoneName when YAML.parse yields null', () => {
     const configPath = 'config.yml';
 
-    mock.method(fs, 'existsSync', () => true);
-    const readSpy = mock.method(fs, 'readFileSync', (path: string, encoding: string) => {
-      assert.equal(path, configPath);
-      assert.equal(encoding, 'utf8');
-      return 'yaml-content';
-    });
-    const parseSpy = mock.method(YAML, 'parse', () => null);
+    vi.spyOn(fs, 'existsSync').mockImplementation(() => true);
+    const readSpy = vi
+      .spyOn(fs, 'readFileSync')
+      .mockImplementation((path: string, encoding: string) => {
+        assert.equal(path, configPath);
+        assert.equal(encoding, 'utf8');
+        return 'yaml-content';
+      });
+    const parseSpy = vi.spyOn(YAML, 'parse').mockImplementation(() => null);
 
     const result = loadConfig(configPath);
 
@@ -64,13 +68,15 @@ describe('loadConfig', () => {
       logging: { file: absoluteLogFile },
     };
 
-    mock.method(fs, 'existsSync', () => true);
-    const readSpy = mock.method(fs, 'readFileSync', (p: string, encoding: string) => {
-      assert.equal(p, configPath);
-      assert.equal(encoding, 'utf8');
-      return 'yaml-content';
-    });
-    const parseSpy = mock.method(YAML, 'parse', () => parsed);
+    vi.spyOn(fs, 'existsSync').mockImplementation(() => true);
+    const readSpy = vi
+      .spyOn(fs, 'readFileSync')
+      .mockImplementation((p: string, encoding: string) => {
+        assert.equal(p, configPath);
+        assert.equal(encoding, 'utf8');
+        return 'yaml-content';
+      });
+    const parseSpy = vi.spyOn(YAML, 'parse').mockImplementation(() => parsed);
 
     const result = loadConfig(configPath);
 
@@ -88,13 +94,15 @@ describe('loadConfig', () => {
       logging: { file: relativeLogFile },
     };
 
-    mock.method(fs, 'existsSync', () => true);
-    const readSpy = mock.method(fs, 'readFileSync', (p: string, encoding: string) => {
-      assert.equal(p, configPath);
-      assert.equal(encoding, 'utf8');
-      return 'yaml-content';
-    });
-    const parseSpy = mock.method(YAML, 'parse', () => parsed);
+    vi.spyOn(fs, 'existsSync').mockImplementation(() => true);
+    const readSpy = vi
+      .spyOn(fs, 'readFileSync')
+      .mockImplementation((p: string, encoding: string) => {
+        assert.equal(p, configPath);
+        assert.equal(encoding, 'utf8');
+        return 'yaml-content';
+      });
+    const parseSpy = vi.spyOn(YAML, 'parse').mockImplementation(() => parsed);
 
     const result = loadConfig(configPath);
 

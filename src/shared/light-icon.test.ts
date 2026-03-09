@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import chalk from 'chalk';
 import type { Light } from '../api/index.js';
 import * as colors from './color.js';

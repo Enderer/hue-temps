@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, it, mock } from 'node:test';
+import { afterEach, describe, it, vi } from 'vitest';
 import winston from 'winston';
 import {
   __setRootLoggerForTests,
@@ -32,12 +32,12 @@ describe('logger', () => {
   };
 
   afterEach(() => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
     __setRootLoggerForTests(null);
   });
 
   it('returns platform-specific default log file paths', () => {
-    mock.method(os, 'homedir', () => '/mock-home');
+    vi.spyOn(os, 'homedir').mockImplementation(() => '/mock-home');
 
     withMockedPlatform('darwin', () => {
       assert.equal(
@@ -81,11 +81,9 @@ describe('logger', () => {
     const filePath = path.join(tempRoot, 'nested', 'app.log');
     const logDir = path.dirname(filePath);
 
-    const createLoggerSpy = mock.method(
-      winston,
-      'createLogger',
-      () => ({ child: mock.fn() }) as any,
-    );
+    const createLoggerSpy = vi
+      .spyOn(winston, 'createLogger')
+      .mockImplementation(() => ({ child: vi.fn() }) as any);
 
     configureLogging({
       level: 'debug',
@@ -97,7 +95,7 @@ describe('logger', () => {
     assert.equal(fs.existsSync(logDir), true);
     assert.equal(createLoggerSpy.mock.calls.length, 1);
 
-    const [loggerOptions] = createLoggerSpy.mock.calls[0].arguments as [Record<string, unknown>];
+    const [loggerOptions] = createLoggerSpy.mock.calls[0] as [Record<string, unknown>];
     assert.equal(loggerOptions.level, 'debug');
   });
 
@@ -109,14 +107,16 @@ describe('logger', () => {
 
     let mkdirCallsForLogDir = 0;
     const nativeMkdirSync = fs.mkdirSync;
-    mock.method(fs, 'mkdirSync', (p: fs.PathLike, options?: fs.MakeDirectoryOptions) => {
-      if (path.resolve(String(p)) === path.resolve(logDir)) {
-        mkdirCallsForLogDir += 1;
-      }
-      return nativeMkdirSync(p, options as any);
-    });
+    vi.spyOn(fs, 'mkdirSync').mockImplementation(
+      (p: fs.PathLike, options?: fs.MakeDirectoryOptions) => {
+        if (path.resolve(String(p)) === path.resolve(logDir)) {
+          mkdirCallsForLogDir += 1;
+        }
+        return nativeMkdirSync(p, options as any);
+      },
+    );
 
-    mock.method(winston, 'createLogger', () => ({ child: mock.fn() }) as any);
+    vi.spyOn(winston, 'createLogger').mockImplementation(() => ({ child: vi.fn() }) as any);
 
     configureLogging({
       level: 'info',
@@ -135,9 +135,9 @@ describe('logger', () => {
 
     let loggerOptions: Record<string, unknown> | undefined;
 
-    mock.method(winston, 'createLogger', (opts: Record<string, unknown>) => {
+    vi.spyOn(winston, 'createLogger').mockImplementation((opts: Record<string, unknown>) => {
       loggerOptions = opts;
-      return { child: mock.fn() } as any;
+      return { child: vi.fn() } as any;
     });
 
     configureLogging({
@@ -180,8 +180,8 @@ describe('logger', () => {
   });
 
   it('creates one child logger per module logger and reuses it for all levels', () => {
-    const child = { log: mock.fn() } as any;
-    const root = { child: mock.fn(() => child) } as any;
+    const child = { log: vi.fn() } as any;
+    const root = { child: vi.fn(() => child) } as any;
     __setRootLoggerForTests(root);
 
     const logger = createLogger('api.client');
@@ -190,20 +190,20 @@ describe('logger', () => {
     logger.error('second');
 
     assert.equal(root.child.mock.calls.length, 1);
-    assert.deepEqual(root.child.mock.calls[0].arguments, [{ module: 'api.client' }]);
+    assert.deepEqual(root.child.mock.calls[0], [{ module: 'api.client' }]);
 
     assert.equal(child.log.mock.calls.length, 3);
-    assert.deepEqual(child.log.mock.calls[0].arguments[0], {
+    assert.deepEqual(child.log.mock.calls[0][0], {
       level: 'debug',
       message: 'first',
       module: 'api.client',
     });
-    assert.deepEqual(child.log.mock.calls[1].arguments[0], {
+    assert.deepEqual(child.log.mock.calls[1][0], {
       level: 'warn',
       message: 'middle',
       module: 'api.client',
     });
-    assert.deepEqual(child.log.mock.calls[2].arguments[0], {
+    assert.deepEqual(child.log.mock.calls[2][0], {
       level: 'error',
       message: 'second',
       module: 'api.client',

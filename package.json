@@ -29,7 +29,8 @@
     "gen-splash": "npm run build && node ./build/render-svg.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
-    "test": "npm run build:test && c8 --all --include=dist/src/**/*.js node --test dist/**/*.test.js"
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": ">=24 <25"
@@ -47,7 +48,9 @@
     "globals": "16.5.0",
     "prettier": "^3.1.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "8.49.0"
+    "typescript-eslint": "8.49.0",
+    "vitest": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4"
   },
   "dependencies": {
     "chalk": "5.6.2",

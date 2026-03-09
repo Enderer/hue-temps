@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import { renderGradientSvg, renderSplash } from './splash.js';
 
 const stripAnsi = (value: string): string => value.replace(/\u001B\[[0-9;]*m/g, '');

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it, mock } from 'node:test';
 import got, { Got } from 'got';
+import { afterEach, describe, it, vi } from 'vitest';
 import { createApiClient, createApiClientProvider } from './client.js';
 
 describe('createApiClient', () => {
   afterEach(async () => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
     const loggerModule = await import('../shared/logger.js');
     loggerModule.__setRootLoggerForTests(null);
   });
@@ -15,13 +15,13 @@ describe('createApiClient', () => {
       light1: { id: 1 },
     };
 
-    const getStub = mock.fn(async (resource: string) => {
+    const getStub = vi.fn(async (resource: string) => {
       // Simulate the JSON body got would resolve with
       return { body: fakeResponse };
     });
 
     const fakeGot = { get: getStub } as unknown as Got;
-    const extendSpy = mock.method(got, 'extend', () => fakeGot);
+    const extendSpy = vi.spyOn(got, 'extend').mockImplementation(() => fakeGot);
 
     const ip = '192.0.2.10';
     const user = 'test-user';
@@ -30,31 +30,31 @@ describe('createApiClient', () => {
     const result = await client.get<{ id: number }>('lights');
 
     assert.equal(extendSpy.mock.calls.length, 1);
-    const [extendOptions] = extendSpy.mock.calls[0].arguments;
+    const [extendOptions] = extendSpy.mock.calls[0];
     assert.deepEqual(extendOptions, {
       prefixUrl: `http://${ip}/api/${user}`,
       responseType: 'json',
     });
 
     assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(getStub.mock.calls[0].arguments[0], 'lights');
+    assert.equal(getStub.mock.calls[0][0], 'lights');
     assert.strictEqual(result, fakeResponse);
   });
 
   it('sends alert and logs start/end', async () => {
-    const childLogger = { log: mock.fn() } as any;
-    const rootLogger = { child: mock.fn(() => childLogger) } as any;
+    const childLogger = { log: vi.fn() } as any;
+    const rootLogger = { child: vi.fn(() => childLogger) } as any;
 
     const loggerModule = await import('../shared/logger.js');
     loggerModule.__setRootLoggerForTests(rootLogger);
 
-    const putStub = mock.fn(async (resource: string) => {
+    const putStub = vi.fn(async (resource: string) => {
       assert.equal(resource, 'lights/abc/state');
       return { ok: true } as any;
     });
 
     const fakeGot = { put: putStub } as unknown as Got;
-    const extendSpy = mock.method(got, 'extend', () => fakeGot);
+    const extendSpy = vi.spyOn(got, 'extend').mockImplementation(() => fakeGot);
 
     const client = createApiClient('192.0.2.10', 'test-user');
 
@@ -63,14 +63,14 @@ describe('createApiClient', () => {
     assert.equal(result, true);
 
     assert.equal(extendSpy.mock.calls.length, 1);
-    const [extendOptions] = extendSpy.mock.calls[0].arguments;
+    const [extendOptions] = extendSpy.mock.calls[0];
     assert.deepEqual(extendOptions, {
       prefixUrl: 'http://192.0.2.10/api/test-user',
       responseType: 'json',
     });
 
     assert.equal(putStub.mock.calls.length, 1);
-    const callArgs = putStub.mock.calls[0].arguments as unknown[];
+    const callArgs = putStub.mock.calls[0] as unknown[];
     const resource = callArgs[0] as string;
     const options = callArgs[1] as any;
     assert.equal(resource, 'lights/abc/state');
@@ -83,17 +83,17 @@ describe('createApiClient', () => {
 
 describe('createApiClientProvider', () => {
   afterEach(async () => {
-    mock.restoreAll();
+    vi.restoreAllMocks();
     const loggerModule = await import('../shared/logger.js');
     loggerModule.__setRootLoggerForTests(null);
   });
 
   it('creates the client once and returns a cached instance', async () => {
-    const getStub = mock.fn(async (_resource: string) => ({ body: {} }));
+    const getStub = vi.fn(async (_resource: string) => ({ body: {} }));
     const fakeGot = { get: getStub } as unknown as Got;
-    const extendSpy = mock.method(got, 'extend', () => fakeGot);
+    const extendSpy = vi.spyOn(got, 'extend').mockImplementation(() => fakeGot);
 
-    const load = mock.fn(async () => ({ bridge: '192.0.2.10', user: 'test-user', source: 'env' }));
+    const load = vi.fn(async () => ({ bridge: '192.0.2.10', user: 'test-user', source: 'env' }));
     const connectionLoader = {
       load,
     } as any;
@@ -109,8 +109,8 @@ describe('createApiClientProvider', () => {
   });
 
   it('throws when no connection info is available', async () => {
-    const extendSpy = mock.method(got, 'extend', () => ({}) as Got);
-    const load = mock.fn(async () => undefined);
+    const extendSpy = vi.spyOn(got, 'extend').mockImplementation(() => ({}) as Got);
+    const load = vi.fn(async () => undefined);
     const connectionLoader = {
       load,
     } as any;

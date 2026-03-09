@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { describe, it } from 'node:test';
+import { describe, it } from 'vitest';
 import { clip, kelvinToMired, kelvinToRGB, miredToKelvin, miredToRGB } from './color.js';
 
 // Expected values produced by the algorithm for representative temperatures
