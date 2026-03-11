@@ -1,4 +1,4 @@
-import { fetchResource } from './fetch-resource.js';
+import { Mapper } from './fetch-resource.js';
 
 export interface Sensor {
   id: string;
@@ -6,7 +6,7 @@ export interface Sensor {
   productName: string;
 }
 
-export const fetchSensors = fetchResource('sensors', ({ id, o }): Sensor => {
+export const mapSensors: Mapper<Sensor> = ({ id, o }) => {
   const { name, productname: productName } = o as any;
   return { id, name, productName };
-});
+};

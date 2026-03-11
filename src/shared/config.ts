@@ -1,7 +1,8 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import YAML from 'yaml';
-import { defaultLogFilePath, LoggingOptions, LogLevel } from './logger.js';
+import { LoggingOptions, LogLevel } from './logger.js';
 
 const ZONE_NAME_DEFAULT = 'Hue Temps';
 const ENV_BRIDGE = 'HUETEMPS_BRIDGE';
@@ -66,4 +67,19 @@ export const loadConfig = (configPath: string): HueTempsConfig => {
   };
 
   return config;
+};
+
+/**
+ * Determines the default log file path based on the operating system.
+ */
+export const defaultLogFilePath = (): string => {
+  const appName = 'huetemps';
+  switch (process.platform) {
+    case 'darwin':
+      return path.join(os.homedir(), 'Library', 'Logs', appName, `${appName}.log`);
+    case 'win32':
+      return path.join(os.homedir(), 'AppData', 'Local', appName, 'logs', `${appName}.log`);
+    default:
+      return path.join(os.homedir(), '.cache', appName, `${appName}.log`);
+  }
 };

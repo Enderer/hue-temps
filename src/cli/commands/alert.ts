@@ -22,7 +22,7 @@ export const alert =
     if (light == null) {
       throw new Error(`No light found matching '${id}'`);
     }
-    const client = await store.provider();
+    const client = await store.apiProvider();
     const response = await client.alert(light.id);
     logger.info(`Alert light ${id} - complete: ${JSON.stringify(response)}`);
   };

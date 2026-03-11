@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, it, vi } from 'vitest';
 import YAML from 'yaml';
-import { loadConfig } from './config.js';
+import { defaultLogFilePath, loadConfig } from './config.js';
 
 describe('loadConfig', () => {
   afterEach(() => {
@@ -24,9 +25,9 @@ describe('loadConfig', () => {
     vi.spyOn(fs, 'existsSync').mockImplementation(() => true);
     const readSpy = vi
       .spyOn(fs, 'readFileSync')
-      .mockImplementation((path: string, encoding: string) => {
-        assert.equal(path, configPath);
-        assert.equal(encoding, 'utf8');
+      .mockImplementation((filePath: fs.PathOrFileDescriptor, options: unknown) => {
+        assert.equal(filePath, configPath);
+        assert.equal(options, 'utf8');
         return 'yaml-content';
       });
     const parseSpy = vi.spyOn(YAML, 'parse').mockImplementation(() => parsed);
@@ -45,9 +46,9 @@ describe('loadConfig', () => {
     vi.spyOn(fs, 'existsSync').mockImplementation(() => true);
     const readSpy = vi
       .spyOn(fs, 'readFileSync')
-      .mockImplementation((path: string, encoding: string) => {
-        assert.equal(path, configPath);
-        assert.equal(encoding, 'utf8');
+      .mockImplementation((filePath: fs.PathOrFileDescriptor, options: unknown) => {
+        assert.equal(filePath, configPath);
+        assert.equal(options, 'utf8');
         return 'yaml-content';
       });
     const parseSpy = vi.spyOn(YAML, 'parse').mockImplementation(() => null);
@@ -71,9 +72,9 @@ describe('loadConfig', () => {
     vi.spyOn(fs, 'existsSync').mockImplementation(() => true);
     const readSpy = vi
       .spyOn(fs, 'readFileSync')
-      .mockImplementation((p: string, encoding: string) => {
-        assert.equal(p, configPath);
-        assert.equal(encoding, 'utf8');
+      .mockImplementation((filePath: fs.PathOrFileDescriptor, options: unknown) => {
+        assert.equal(filePath, configPath);
+        assert.equal(options, 'utf8');
         return 'yaml-content';
       });
     const parseSpy = vi.spyOn(YAML, 'parse').mockImplementation(() => parsed);
@@ -97,9 +98,9 @@ describe('loadConfig', () => {
     vi.spyOn(fs, 'existsSync').mockImplementation(() => true);
     const readSpy = vi
       .spyOn(fs, 'readFileSync')
-      .mockImplementation((p: string, encoding: string) => {
-        assert.equal(p, configPath);
-        assert.equal(encoding, 'utf8');
+      .mockImplementation((filePath: fs.PathOrFileDescriptor, options: unknown) => {
+        assert.equal(filePath, configPath);
+        assert.equal(options, 'utf8');
         return 'yaml-content';
       });
     const parseSpy = vi.spyOn(YAML, 'parse').mockImplementation(() => parsed);
@@ -111,5 +112,32 @@ describe('loadConfig', () => {
     assert.equal(result.logging.level, 'info');
     assert.equal(readSpy.mock.calls.length, 1);
     assert.equal(parseSpy.mock.calls.length, 1);
+  });
+});
+
+describe('defaultLogFilePath', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns macOS log path when platform is darwin', () => {
+    vi.spyOn(os, 'homedir').mockReturnValue('/Users/stephen');
+    vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
+
+    const result = defaultLogFilePath();
+
+    assert.equal(
+      result,
+      path.join('/Users/stephen', 'Library', 'Logs', 'huetemps', 'huetemps.log'),
+    );
+  });
+
+  it('returns cache log path for non-darwin and non-win32 platforms', () => {
+    vi.spyOn(os, 'homedir').mockReturnValue('/home/stephen');
+    vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+
+    const result = defaultLogFilePath();
+
+    assert.equal(result, path.join('/home/stephen', '.cache', 'huetemps', 'huetemps.log'));
   });
 });

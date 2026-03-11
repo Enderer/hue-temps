@@ -1,23 +1,9 @@
 import assert from 'node:assert/strict';
-import { afterEach, describe, it, vi } from 'vitest';
-import type { ApiClient } from './client.js';
+import { describe, it } from 'vitest';
+import { mapLight } from './fetch-lights.js';
 
-describe('fetchLights', () => {
-  afterEach(async () => {
-    vi.restoreAllMocks();
-    const loggerModule = await import('../shared/logger.js');
-    loggerModule.__setRootLoggerForTests(null);
-  });
-
-  it('fetches lights', async () => {
-    const childLogger = { log: vi.fn() } as any;
-    const rootLogger = { child: vi.fn(() => childLogger) } as any;
-
-    const loggerModule = await import('../shared/logger.js');
-    loggerModule.__setRootLoggerForTests(rootLogger);
-
-    const { fetchLights } = await import('./fetch-lights.js');
-
+describe('mapLight', () => {
+  it('maps light api records to normalized light objects', () => {
     const apiResponse = {
       light1: {
         name: 'Kitchen',
@@ -32,14 +18,7 @@ describe('fetchLights', () => {
       },
     } satisfies Record<string, unknown>;
 
-    const getStub = vi.fn(async (resource: string) => {
-      assert.equal(resource, 'lights');
-      return apiResponse;
-    });
-
-    const client = { get: getStub } as unknown as ApiClient;
-
-    const lights = await fetchLights(async () => client);
+    const lights = Object.entries(apiResponse).map(([id, o]) => mapLight({ id, o }));
 
     assert.deepEqual(lights, [
       {
@@ -63,13 +42,5 @@ describe('fetchLights', () => {
         tempMax: 370,
       },
     ]);
-
-    assert.equal(getStub.mock.calls.length, 1);
-    assert.equal(getStub.mock.calls[0][0], 'lights');
-
-    assert.equal(rootLogger.child.mock.calls.length, 1);
-    assert.equal(childLogger.log.mock.calls.length, 2);
-
-    loggerModule.__setRootLoggerForTests(null);
   });
 });

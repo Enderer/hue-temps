@@ -1,56 +1,48 @@
 import { ApiClientProvider } from './client.js';
-import { fetchGroups, Group } from './fetch-groups.js';
-import { fetchLights, Light } from './fetch-lights.js';
-import { fetchSensors, Sensor } from './fetch-sensors.js';
+import { Group, mapGroup } from './fetch-groups.js';
+import { Light, mapLight } from './fetch-lights.js';
+import { fetch, Fetcher, Filter, Mapper, Resource } from './fetch-resource.js';
+import { mapSensors as mapSensor, Sensor } from './fetch-sensors.js';
 
+/**
+ * Central store to access lights and other resources.
+ */
 export interface Store {
-  lights: StoreFunction<Light>;
-  sensors: StoreFunction<Sensor>;
-  groups: StoreFunction<Group>;
-  provider: ApiClientProvider;
+  lights: Fetcher<Light>;
+  sensors: Fetcher<Sensor>;
+  groups: Fetcher<Group>;
+  apiProvider: ApiClientProvider;
 }
 
-export interface StoreFunction<T> {
-  (predicate?: Predicate<T>): Promise<T[]>;
-}
+export type StoreKey = 'lights' | 'sensors' | 'groups';
 
-export interface Predicate<T> {
-  (t: T): boolean;
-}
+export const createStore = (apiProvider: ApiClientProvider): Store => {
+  const lights = createResource<Light>(apiProvider, 'lights', mapLight);
+  const sensors = createResource<Sensor>(apiProvider, 'sensors', mapSensor);
+  const groups = createResource<Group>(apiProvider, 'groups', mapGroup);
+  return { lights, sensors, groups, apiProvider };
+};
 
-export interface StoreData {
-  lights: Promise<Light[]> | undefined;
-  sensors: Promise<Sensor[]> | undefined;
-  groups: Promise<Group[]> | undefined;
-  provider: ApiClientProvider;
-}
-
-export const createStore = (provider: ApiClientProvider): Store => {
-  const storeData: StoreData = {
-    lights: undefined,
-    sensors: undefined,
-    groups: undefined,
-    provider,
-  };
-
-  const resource =
-    <T>(prop: keyof StoreData, fetch: () => Promise<T[]>): StoreFunction<T> =>
-    async (predicate?: (l: T) => boolean) => {
-      const data = storeData as any;
-      data[prop] = data[prop] ?? fetch();
-      const all = await data[prop];
-      const lights = predicate ? all.filter(predicate) : [...all];
-      return lights;
-    };
-
-  const lights = resource<Light>('lights', () => fetchLights(storeData.provider));
-  const sensors = resource<Sensor>('sensors', () => fetchSensors(storeData.provider));
-  const groups = resource<Group>('groups', () => fetchGroups(storeData.provider));
-
-  return {
-    lights,
-    sensors,
-    groups,
-    provider,
+/**
+ * Creates a function that returns all objects of a given entity type.
+ * Built in caching to avoid fetching the same data multiple times.
+ * @param apiProvider Provides client to fetch data from the API
+ * @param key Key of the store to fetch ('lights', 'groups', or 'sensors')
+ * @param mapper Mapper function to build the returned object from api response
+ */
+export const createResource = <T extends Resource>(
+  apiProvider: ApiClientProvider,
+  key: StoreKey,
+  mapper: Mapper<T>,
+): Fetcher<T> => {
+  let promise: Promise<T[]> | undefined;
+  const fetcher = fetch(key, mapper);
+  return async (predicate?: Filter<T>) => {
+    if (promise == null) {
+      promise = fetcher(apiProvider);
+    }
+    const rows = await promise;
+    const resource = predicate ? rows.filter(predicate) : [...rows];
+    return resource;
   };
 };

@@ -1,31 +1,17 @@
 import assert from 'node:assert/strict';
 import { Command } from 'commander';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, it, vi } from 'vitest';
-import { __setRootLoggerForTests } from '../../shared/logger.js';
-
-const childLogger = { log: vi.fn() } as any;
-const rootLogger = { child: vi.fn(() => childLogger) } as any;
+import { afterEach, beforeAll, describe, it, vi } from 'vitest';
 
 let init: typeof import('./list.js').init;
 let list: typeof import('./list.js').list;
 
 describe('list command', () => {
   beforeAll(async () => {
-    __setRootLoggerForTests(rootLogger);
     ({ init, list } = await import('./list.js'));
-  });
-
-  beforeEach(() => {
-    childLogger.log = vi.fn();
-    rootLogger.child = vi.fn(() => childLogger);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-  });
-
-  afterAll(() => {
-    __setRootLoggerForTests(null);
   });
 
   it('init registers list command with target arg and action handler', async () => {
@@ -69,7 +55,6 @@ describe('list command', () => {
   });
 
   it('prints sorted tables for all targets and calls store per section', async () => {
-    // Capture console output
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const store = {
@@ -176,8 +161,6 @@ describe('list command', () => {
   });
 
   it('throws when temps group.lightIds is undefined and no rows are available', async () => {
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
     const store = {
       groups: vi.fn(async () => [{ id: 'g1', name: 'ZoneNoIds' }]),
       lights: vi.fn(async () => [
@@ -194,6 +177,8 @@ describe('list command', () => {
       ]),
     } as any;
 
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
     await assert.rejects(
       async () => list('ZoneNoIds', store)('temps'),
       /Table must define at least one row/,
@@ -206,14 +191,14 @@ describe('list command', () => {
   });
 
   it('throws when temps zone is missing', async () => {
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
     const store = {
       groups: vi.fn(async () => [{ id: 'g9', name: 'OtherZone', lightIds: [] }]),
       lights: vi.fn(async () => {
         throw new Error('lights should not be called when no zone match');
       }),
     } as any;
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     await assert.rejects(
       async () => list('MissingZone', store)('temps'),

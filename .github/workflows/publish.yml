@@ -16,8 +16,16 @@ jobs:
         with:
           node-version: 24
       - run: npm ci
+      - name: Set package version from release tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG#v}"
+          echo "Using version: $VERSION from tag: $TAG"
+          npm pkg set version="$VERSION"
       - run: npm run lint
       - run: npm run build
+      - run: npm run write-version
       - run: npm test
       - name: Upload dist artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -49,7 +57,7 @@ jobs:
         run: |
           VERSION="${TAG#v}"
           echo "Using version: $VERSION from tag: $TAG"
-          npm version "$VERSION" --no-git-tag-version --allow-same-version
+          npm pkg set version="$VERSION"
       - name: Ensure no token auth is configured
         run: |
           npm config delete //registry.npmjs.org/:_authToken || true

@@ -26,23 +26,12 @@ const createLoader = (
   return { loader, load, list, setBridge, setUser, clear };
 };
 
-const setupLogger = async () => {
-  const childLogger = { log: vi.fn() } as any;
-  const rootLogger = { child: vi.fn(() => childLogger) } as any;
-  const loggerModule = await import('../../shared/logger.js');
-  loggerModule.__setRootLoggerForTests(rootLogger);
-  return { childLogger, rootLogger, loggerModule };
-};
-
 describe('connect command', () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.restoreAllMocks();
-    const loggerModule = await import('../../shared/logger.js');
-    loggerModule.__setRootLoggerForTests(null);
   });
 
   it('connectSet bridge saves bridge and lists current connection', async () => {
-    await setupLogger();
     const output: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
@@ -70,7 +59,6 @@ describe('connect command', () => {
   });
 
   it('connectSet user saves user and lists current connection', async () => {
-    await setupLogger();
     const output: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
@@ -95,7 +83,6 @@ describe('connect command', () => {
   });
 
   it('connectList prints no info found when list returns undefined', async () => {
-    await setupLogger();
     const output: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
@@ -111,7 +98,6 @@ describe('connect command', () => {
   });
 
   it('connectList renders fallback values for missing fields', async () => {
-    await setupLogger();
     const output: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));
@@ -127,7 +113,6 @@ describe('connect command', () => {
   });
 
   it('connectClear clears values and lists current connection', async () => {
-    await setupLogger();
     const output: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
       output.push(args.join(' '));

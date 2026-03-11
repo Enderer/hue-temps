@@ -1,4 +1,4 @@
-import { fetchResource } from './fetch-resource.js';
+import { Mapper } from './fetch-resource.js';
 const TEMP_MIRED_DEFAULT = 370;
 
 export interface Light {
@@ -12,10 +12,7 @@ export interface Light {
   tempMax: number;
 }
 
-/**
- * Retrieves lights from the Hue api
- */
-export const fetchLights = fetchResource('lights', ({ id, o }) => {
+export const mapLight: Mapper<Light> = ({ id, o }) => {
   const row = o as any;
   const name = row.name;
   const productName = row.productname ?? '';
@@ -26,4 +23,4 @@ export const fetchLights = fetchResource('lights', ({ id, o }) => {
   const tempMax = row.capabilities?.control?.ct?.max ?? temp;
   const light: Light = { id, name, productName, reachable, on, temp, tempMin, tempMax };
   return light;
-});
+};

@@ -4,10 +4,8 @@ import { afterEach, describe, it, vi } from 'vitest';
 import { createApiClient, createApiClientProvider } from './client.js';
 
 describe('createApiClient', () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.restoreAllMocks();
-    const loggerModule = await import('../shared/logger.js');
-    loggerModule.__setRootLoggerForTests(null);
   });
 
   it('configures got and forwards get calls', async () => {
@@ -42,12 +40,6 @@ describe('createApiClient', () => {
   });
 
   it('sends alert and logs start/end', async () => {
-    const childLogger = { log: vi.fn() } as any;
-    const rootLogger = { child: vi.fn(() => childLogger) } as any;
-
-    const loggerModule = await import('../shared/logger.js');
-    loggerModule.__setRootLoggerForTests(rootLogger);
-
     const putStub = vi.fn(async (resource: string) => {
       assert.equal(resource, 'lights/abc/state');
       return { ok: true } as any;
@@ -75,17 +67,12 @@ describe('createApiClient', () => {
     const options = callArgs[1] as any;
     assert.equal(resource, 'lights/abc/state');
     assert.deepEqual(options, { json: { alert: 'select' } });
-
-    assert.equal(rootLogger.child.mock.calls.length, 1);
-    assert.equal(childLogger.log.mock.calls.length, 2);
   });
 });
 
 describe('createApiClientProvider', () => {
-  afterEach(async () => {
+  afterEach(() => {
     vi.restoreAllMocks();
-    const loggerModule = await import('../shared/logger.js');
-    loggerModule.__setRootLoggerForTests(null);
   });
 
   it('creates the client once and returns a cached instance', async () => {

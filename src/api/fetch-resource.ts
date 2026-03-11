@@ -8,13 +8,18 @@ export interface Resource {
   id: string;
 }
 
-/** Function that maps a resource returned from the api to an object */
-export interface ResourceMapper<T extends Resource, O> {
-  (g: { id: string; o: O }): T;
+/** Fetches objects of a given entity type */
+export interface Fetcher<T> {
+  (predicate?: Filter<T>): Promise<T[]>;
 }
 
-/** Function that filters resources that should be returned */
-export interface ResourceFilter<T> {
+/** Maps an object returned from API call to a resource */
+export interface Mapper<T extends Resource> {
+  (g: { id: string; o: unknown }): T;
+}
+
+/** Filters resources that should be returned */
+export interface Filter<T> {
   (g: T): boolean;
 }
 
@@ -24,9 +29,9 @@ export interface ResourceFilter<T> {
  * @param resource Name of the type of resource to return
  * @param mapper Mapper function to build the returned object from api response
  */
-export const fetchResource = <T extends Resource, O = unknown>(
+export const fetch = <T extends Resource, O = unknown>(
   resource: string,
-  mapper: ResourceMapper<T, O> = defaultMapper,
+  mapper: Mapper<T> = defaultMapper,
 ) => {
   return async (provider: ApiClientProvider): Promise<T[]> => {
     logger.debug(`Fetching resources for ${resource}`);

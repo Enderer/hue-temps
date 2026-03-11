@@ -4,7 +4,7 @@ import path from 'node:path';
 import { afterEach, describe, it, vi } from 'vitest';
 import { configureLogging } from '../shared/logger.js';
 import type { ApiClient } from './client.js';
-import { fetchResource } from './fetch-resource.js';
+import { fetch as fetchResource } from './fetch-resource.js';
 
 describe('fetchResource', () => {
   afterEach(() => {
@@ -12,19 +12,12 @@ describe('fetchResource', () => {
   });
 
   it('invokes predicate for each mapped item and filters results', async () => {
-    try {
-      configureLogging({
-        level: 'error',
-        filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
-        maxSize: '1m',
-        maxFiles: '1d',
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (!message.includes('already been configured')) {
-        throw error;
-      }
-    }
+    configureLogging({
+      level: 'error',
+      filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
+      maxSize: '1m',
+      maxFiles: '1d',
+    });
 
     const responseBody = {
       alpha: { name: 'Alpha' },
@@ -54,19 +47,12 @@ describe('fetchResource', () => {
   });
 
   it('uses defaultMapper when mapper is omitted', async () => {
-    try {
-      configureLogging({
-        level: 'error',
-        filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
-        maxSize: '1m',
-        maxFiles: '1d',
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (!message.includes('already been configured')) {
-        throw error;
-      }
-    }
+    configureLogging({
+      level: 'error',
+      filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
+      maxSize: '1m',
+      maxFiles: '1d',
+    });
 
     const responseBody = {
       alpha: { name: 'Alpha' },
