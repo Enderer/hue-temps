@@ -1,6 +1,6 @@
 # logging:
-#   level: debug # debug | info | warn | error
-#   file: ~/.cache/huetemps/huetemps.log # absolute or relative to this config file
+#   level: info # debug | info | warn | error
+#   file: huetemps.log # absolute or relative to this config file
 #   maxSize: 10m # rotate after this size
 #   maxFiles: 5 # number of rotated files to keep
 # temps:

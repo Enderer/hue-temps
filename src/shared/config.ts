@@ -1,9 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import YAML from 'yaml';
 import { LogLevel } from './logger.js';
 import { defaultConfigPath, defaultLogPath, isAbsolutePath } from './os.js';
+
+const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const ZONE_NAME_DEFAULT = 'Hue Temps';
 const ENV_BRIDGE = 'HUETEMPS_BRIDGE';
@@ -42,24 +45,35 @@ type RawConfig = {
   };
 };
 
+export interface ResolvedConfigPath {
+  configPath: string;
+  explicit: boolean;
+}
+
 /**
  * Resolve config path from CLI args.
  */
-export const resolveConfigPath = (argv: string[]): string => {
+export const resolveConfigPath = (argv: string[]): ResolvedConfigPath => {
   const program = new Command();
   program.option('-c, --config <path>', 'Path to config file');
   program.allowUnknownOption(true);
+  program.helpOption(false);
   program.parse(argv, { from: 'user' });
   const opts = program.opts();
-  const configPath = defaultConfigPath(APP_ID, APP_DIR_WINDOWS, CONFIG_FILE_NAME);
-  return opts.config ? (normalizeString(opts.config) ?? configPath) : configPath;
+  const defaultPath = defaultConfigPath(APP_ID, APP_DIR_WINDOWS, CONFIG_FILE_NAME);
+  const explicit = normalizeString(opts.config);
+  return {
+    configPath: explicit ?? defaultPath,
+    explicit: explicit != null,
+  };
 };
 
 /**
  * Load the app configuration.
  * Looks for a YAML file, applies defaults, and resolves paths.
+ * When required is true, throws if the config file does not exist.
  */
-export const loadConfig = (configPath: string): HueTempsConfig => {
+export const loadConfig = (configPath: string, required = false): HueTempsConfig => {
   // Create default config using app defaults
   const logFilePath = defaultLogPath(APP_ID, APP_DIR_WINDOWS);
   const defaultConfig: HueTempsConfig = {
@@ -78,6 +92,9 @@ export const loadConfig = (configPath: string): HueTempsConfig => {
 
   // Look for a config file and apply overrides if found
   if (!fs.existsSync(configPath)) {
+    if (required) {
+      throw new Error(`Config file not found: ${configPath}`);
+    }
     return defaultConfig;
   }
   const fileContents = fs.readFileSync(configPath, 'utf8');
@@ -106,6 +123,21 @@ export const loadConfig = (configPath: string): HueTempsConfig => {
     zoneName,
     logging,
   };
+};
+
+/**
+ * Returns the default config file path for the current platform.
+ */
+export const getConfigPath = (): string => {
+  return defaultConfigPath(APP_ID, APP_DIR_WINDOWS, CONFIG_FILE_NAME);
+};
+
+/**
+ * Returns the default config file content with all values commented out.
+ */
+export const configTemplate = (): string => {
+  const templatePath = path.join(__dirname, 'config.template.yaml');
+  return fs.readFileSync(templatePath, 'utf8');
 };
 
 /**

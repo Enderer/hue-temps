@@ -8,9 +8,7 @@ Practical command-line control for your Philips Hue home.
 
 - [Install](#install)
 - [Quick start](#quick-start)
-- [Usage](#usage)
 - [Configuration](#configuration)
-- [Credentials and security](#credentials-and-security)
 
 ## Install
 
@@ -47,17 +45,64 @@ export HUETEMPS_USER="your-user-token"
 ### 2) Run commands
 
 ```bash
-huetemps list
-huetemps list lights
-huetemps list groups
-huetemps alert 123
-huetemps alert "Living Room - Table"
+|> huetemps list
+|> huetemps list lights
+|> huetemps list groups
+|> huetemps alert 123
+|> huetemps alert "Living Room - Table"
 ```
-
-## Usage
 
 ## Configuration
 
-Config options can be set in `config.yaml`.
+View the current resolved configuration:
 
-## Credentials and security
+```bash
+|> huetemps config
+
+Configuration
+
+Config file   C:\Users\Name\AppData\Local\HueTemps\config.yaml
+Zone name     Hue Temps
+Log level     info
+Log file      C:\Users\Name\AppData\Local\HueTemps\logs\huetemps.log
+Log max size  10m
+Log max files 5
+```
+
+Generate a default config file at the platform-specific path:
+
+```bash
+|> huetemps config --init
+
+✔ Config file created at C:\Users\Name\AppData\Local\HueTemps\config.yaml
+```
+
+This creates an empty `config.yaml` that can be edited:
+
+```yaml
+logging:
+  level: info # debug | info | warn | error
+  file: huetemps.log # absolute or relative to this config file
+  maxSize: 10m # rotate after this size
+  maxFiles: 5 # number of rotated files to keep
+temps:
+  zoneName: Hue Temps # all lights in this zone will be set to correct temp
+```
+
+Use the `--config` `-c` param to use a config file at a custom location:
+
+```bash
+huetemps -c /path/to/config.yaml list
+```
+
+### File locations
+
+Config and log files are stored in the following platform-specific directories:
+
+| Platform | Config                                               | Logs                                        |
+| -------- | ---------------------------------------------------- | ------------------------------------------- |
+| macOS    | `~/Library/Application Support/huetemps/config.yaml` | `~/Library/Logs/huetemps/huetemps.log`      |
+| Linux    | `~/.config/huetemps/config.yaml`                     | `~/.local/state/huetemps/logs/huetemps.log` |
+| Windows  | `%LOCALAPPDATA%\HueTemps\config.yaml`                | `%LOCALAPPDATA%\HueTemps\logs\huetemps.log` |
+
+On Linux, `XDG_CONFIG_HOME` and `XDG_STATE_HOME` are respected if set.

@@ -30,8 +30,9 @@
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "copy:package-json": "node -e \"require('fs').copyFileSync('package.json','dist/package.json')\"",
+    "copy:assets": "node build/copy-assets.js",
     "write-version": "node ./build/write-version.js",
-    "build": "npm run clean && tsc -p tsconfig.json && npm run copy:package-json",
+    "build": "npm run clean && tsc -p tsconfig.json && npm run copy:package-json && npm run copy:assets",
     "dev": "npm run clean && tsc -p tsconfig.json --watch",
     "start": "node dist/src/bin/huetemps.js",
     "prepare": "npm run build",

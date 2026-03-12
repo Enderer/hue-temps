@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, it, vi } from 'vitest';
 import YAML from 'yaml';
-import { loadConfig, resolveConfigPath } from './config.js';
+import { configTemplate, getConfigPath, loadConfig, resolveConfigPath } from './config.js';
 import { defaultConfigPath, defaultLogPath } from './os.js';
 
 // Helper to create a default config object (mimics config.ts logic)
@@ -52,6 +52,14 @@ describe('loadConfig', () => {
     assert.equal(readSpy.mock.calls.length, 0);
     assert.equal(parseSpy.mock.calls.length, 0);
     assert.equal(existsSpy.mock.calls.length, 1);
+  });
+
+  it('throws when file is missing and required is true', () => {
+    vi.spyOn(fs, 'existsSync').mockImplementation(() => false);
+
+    assert.throws(() => loadConfig('/tmp/missing.yml', true), {
+      message: 'Config file not found: /tmp/missing.yml',
+    });
   });
 
   it('reads yaml and returns config with zone name', () => {
@@ -306,28 +314,28 @@ describe('defaultConfigFilePath', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns windows AppData config path on win32', () => {
+  it('returns windows LocalAppData config path on win32', () => {
     vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
-    vi.stubEnv('APPDATA', 'C:\\Users\\stephen\\AppData\\Roaming');
+    vi.stubEnv('LOCALAPPDATA', 'C:\\Users\\stephen\\AppData\\Local');
 
     const result = defaultConfigFilePath();
 
     assert.equal(
       result,
-      path.join('C:\\Users\\stephen\\AppData\\Roaming', 'HueTemps', 'config.yaml'),
+      path.join('C:\\Users\\stephen\\AppData\\Local', 'HueTemps', 'config.yaml'),
     );
   });
 
-  it('falls back to homedir AppData\\Roaming when APPDATA is unset on win32', () => {
+  it('falls back to homedir AppData\\Local when LOCALAPPDATA is unset on win32', () => {
     vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
     vi.spyOn(os, 'homedir').mockReturnValue('C:\\Users\\stephen');
-    delete process.env.APPDATA;
+    delete process.env.LOCALAPPDATA;
 
     const result = defaultConfigFilePath();
 
     assert.equal(
       result,
-      path.join('C:\\Users\\stephen', 'AppData', 'Roaming', 'HueTemps', 'config.yaml'),
+      path.join('C:\\Users\\stephen', 'AppData', 'Local', 'HueTemps', 'config.yaml'),
     );
   });
 
@@ -370,17 +378,20 @@ describe('defaultConfigFilePath', () => {
 describe('resolveConfigPath', () => {
   it('uses --config flag when provided', () => {
     const result = resolveConfigPath(['list', '--config', '/tmp/custom.yaml']);
-    assert.equal(result, '/tmp/custom.yaml');
+    assert.equal(result.configPath, '/tmp/custom.yaml');
+    assert.equal(result.explicit, true);
   });
 
   it('uses -c short flag when provided', () => {
     const result = resolveConfigPath(['list', '-c', '/tmp/custom.yaml']);
-    assert.equal(result, '/tmp/custom.yaml');
+    assert.equal(result.configPath, '/tmp/custom.yaml');
+    assert.equal(result.explicit, true);
   });
 
   it('uses --config=value form when provided', () => {
     const result = resolveConfigPath(['--config=/tmp/custom.yaml']);
-    assert.equal(result, '/tmp/custom.yaml');
+    assert.equal(result.configPath, '/tmp/custom.yaml');
+    assert.equal(result.explicit, true);
   });
 
   it('falls back to default config path when no flag is provided', () => {
@@ -390,19 +401,42 @@ describe('resolveConfigPath', () => {
 
     const result = resolveConfigPath(['list']);
 
-    assert.equal(result, path.join('/tmp/xdg-config', 'huetemps', 'config.yaml'));
+    assert.equal(result.configPath, path.join('/tmp/xdg-config', 'huetemps', 'config.yaml'));
+    assert.equal(result.explicit, false);
   });
 
   it('falls back to default config path when --config value is whitespace-only', () => {
     const result = resolveConfigPath(['--config', '   ']);
 
-    assert.equal(result, defaultConfigFilePath());
+    assert.equal(result.configPath, defaultConfigFilePath());
+    assert.equal(result.explicit, false);
   });
 
   it('returns default config path for empty argv', () => {
     const result = resolveConfigPath([]);
 
-    assert.equal(result, defaultConfigFilePath());
+    assert.equal(result.configPath, defaultConfigFilePath());
+    assert.equal(result.explicit, false);
+  });
+});
+
+describe('getConfigPath', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns the platform-specific default config path', () => {
+    const result = getConfigPath();
+    assert.equal(result, defaultConfigPath('huetemps', 'HueTemps', 'config.yaml'));
+  });
+});
+
+describe('configTemplate', () => {
+  it('returns the template YAML content', () => {
+    const result = configTemplate();
+    assert.ok(result.includes('logging'));
+    assert.ok(result.includes('zoneName'));
+    assert.ok(result.length > 0);
   });
 });
 

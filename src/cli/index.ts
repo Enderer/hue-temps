@@ -9,8 +9,8 @@ const logger = createLogger('cli.main');
 
 export const main = async (argv: string[]) => {
   try {
-    const configPath = resolveConfigPath(argv);
-    const config = loadConfig(configPath);
+    const { configPath, explicit } = resolveConfigPath(argv);
+    const config = loadConfig(configPath, explicit);
     configureLogging(
       config.logging.level,
       config.logging.filePath,
@@ -27,6 +27,7 @@ export const main = async (argv: string[]) => {
     commands.list.init(store, program, config.zoneName);
     commands.alert.init(store, program);
     commands.connect.init(connectionLoader, program);
+    commands.config.init(program, configPath, config);
 
     await program.parseAsync(argv, { from: 'user' });
   } catch (error: any) {

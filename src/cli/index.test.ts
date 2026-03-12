@@ -23,8 +23,11 @@ const mocks = vi.hoisted(() => {
   return {
     mockProgram,
     mockConfig,
-    mockLoadConfig: vi.fn((_configPath: string) => mockConfig),
-    mockResolveConfigPath: vi.fn((_argv: string[]) => '/tmp/config.yaml'),
+    mockLoadConfig: vi.fn((_configPath: string, _required?: boolean) => mockConfig),
+    mockResolveConfigPath: vi.fn((_argv: string[]) => ({
+      configPath: '/tmp/config.yaml',
+      explicit: false,
+    })),
     mockConfigureLogging: vi.fn(
       (
         _level: string,
@@ -40,6 +43,7 @@ const mocks = vi.hoisted(() => {
     mockListInit: vi.fn((_store: unknown, _program: unknown, _zoneName: string) => {}),
     mockAlertInit: vi.fn((_store: unknown, _program: unknown) => {}),
     mockConnectInit: vi.fn((_connectionLoader: unknown, _program: unknown) => {}),
+    mockConfigInit: vi.fn((_program: unknown, _configPath: string, _config: unknown) => {}),
     mockLoggerInfo: vi.fn((_message: string) => {}),
     mockLoggerError: vi.fn((_message: string) => {}),
   };
@@ -69,6 +73,7 @@ vi.mock('./commands/index.js', () => ({
   list: { init: mocks.mockListInit },
   alert: { init: mocks.mockAlertInit },
   connect: { init: mocks.mockConnectInit },
+  config: { init: mocks.mockConfigInit },
 }));
 
 import { main } from './index.js';
@@ -99,6 +104,7 @@ describe('cli main', () => {
     assert.equal(mocks.mockListInit.mock.calls.length, 1);
     assert.equal(mocks.mockAlertInit.mock.calls.length, 1);
     assert.equal(mocks.mockConnectInit.mock.calls.length, 1);
+    assert.equal(mocks.mockConfigInit.mock.calls.length, 1);
     assert.equal(mocks.mockProgram.parseAsync.mock.calls.length, 1);
     assert.equal(process.exitCode, undefined);
   });
