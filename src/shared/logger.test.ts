@@ -18,19 +18,9 @@ describe('logger', () => {
   it('allows configureLogging to be called more than once', () => {
     const tempRoot = createTempDir();
 
-    configureLogging({
-      level: 'info',
-      filePath: path.join(tempRoot, 'one.log'),
-      maxSize: '10m',
-      maxFiles: '5',
-    });
+    configureLogging('info', path.join(tempRoot, 'one.log'), '10m', '5');
 
-    configureLogging({
-      level: 'debug',
-      filePath: path.join(tempRoot, 'two.log'),
-      maxSize: '20m',
-      maxFiles: '10',
-    });
+    configureLogging('debug', path.join(tempRoot, 'two.log'), '20m', '10');
 
     const logger = createLogger('logger.test');
     assert.doesNotThrow(() => logger.info('configured twice'));
@@ -41,12 +31,7 @@ describe('logger', () => {
     const filePath = path.join(tempRoot, 'nested', 'app.log');
     const logDir = path.dirname(filePath);
 
-    configureLogging({
-      level: 'debug',
-      filePath,
-      maxSize: '20m',
-      maxFiles: '10',
-    });
+    configureLogging('debug', filePath, '20m', '10');
 
     assert.equal(fs.existsSync(logDir), true);
   });
@@ -68,30 +53,54 @@ describe('logger', () => {
       },
     );
 
-    configureLogging({
-      level: 'info',
-      filePath,
-      maxSize: '10m',
-      maxFiles: '5',
-    });
+    configureLogging('info', filePath, '10m', '5');
 
     assert.equal(mkdirCallsForLogDir, 0);
   });
 
   it('returns module loggers with all level methods', () => {
     const tempRoot = createTempDir();
-    configureLogging({
-      level: 'info',
-      filePath: path.join(tempRoot, 'app.log'),
-      maxSize: '10m',
-      maxFiles: '5',
-    });
+    configureLogging('info', path.join(tempRoot, 'app.log'), '10m', '5');
 
     const logger = createLogger('api.client');
     assert.doesNotThrow(() => logger.debug('first'));
     assert.doesNotThrow(() => logger.info('second'));
     assert.doesNotThrow(() => logger.warn('third'));
     assert.doesNotThrow(() => logger.error('fourth'));
+  });
+
+  it('formats log line with module tag in brackets', () => {
+    const tempRoot = createTempDir();
+    let loggerOptions: winston.LoggerOptions | undefined;
+
+    vi.spyOn(winston.Logger.prototype, 'configure').mockImplementation(function (
+      this: winston.Logger,
+      options: winston.LoggerOptions,
+    ) {
+      loggerOptions = options;
+      return this;
+    });
+
+    configureLogging('info', path.join(tempRoot, 'app.log'), '10m', '5');
+
+    const transports = loggerOptions?.transports as Array<Record<string, unknown>> | undefined;
+    assert.ok(Array.isArray(transports));
+    assert.ok(transports.length > 0);
+
+    const format = transports[0].format as {
+      transform: (info: Record<string, unknown>) => Record<string, unknown>;
+    };
+    const transformed = format.transform({
+      timestamp: '2026-03-10 00:00:00',
+      level: 'warn',
+      message: 'something happened',
+      module: 'api.client',
+    });
+    const rendered = (transformed as any)[Symbol.for('message')] as string;
+
+    assert.ok(rendered.includes('WARN'));
+    assert.ok(rendered.includes('[api.client]'));
+    assert.ok(rendered.endsWith(' something happened'));
   });
 
   it('formats log line without module tag when module is null', () => {
@@ -106,12 +115,7 @@ describe('logger', () => {
       return this;
     });
 
-    configureLogging({
-      level: 'info',
-      filePath: path.join(tempRoot, 'app.log'),
-      maxSize: '10m',
-      maxFiles: '5',
-    });
+    configureLogging('info', path.join(tempRoot, 'app.log'), '10m', '5');
 
     const transports = loggerOptions?.transports as Array<Record<string, unknown>> | undefined;
     assert.ok(Array.isArray(transports));

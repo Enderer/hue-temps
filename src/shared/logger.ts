@@ -12,26 +12,34 @@ export interface Logger {
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-export interface LoggingOptions {
-  level: LogLevel;
-  filePath: string;
-  maxSize: string | number;
-  maxFiles: string | number;
-}
-
+/**
+ * Root Logger for application
+ * Used to create module-specific loggers consumed by the rest of the app.
+ * Initialized with a default console transport to ensure logging is available immediately.
+ * It will be reconfigured at startup with user logging configuration.
+ */
 const rootLogger = winston.createLogger({
   level: 'info',
   transports: [new winston.transports.Console({ level: 'info' })],
 });
 
-export const configureLogging = (options: LoggingOptions): void => {
-  const { level, filePath, maxSize, maxFiles } = options;
-
+/**
+ * Configure global logging for the application. Runs once at startup.
+ * @param level The minimum log level to output (debug, info, warn, error).
+ * @param filePath The file path for the log file. Can include date patterns for rotation.
+ * @param maxSize The maximum size of a log file before rotation (e.g. '10m' for 10 megabytes).
+ * @param maxFiles The maximum number of rotated log files to keep (e.g. '14d' for 14 days).
+ */
+export const configureLogging = (
+  level: LogLevel,
+  filePath: string,
+  maxSize: string,
+  maxFiles: string,
+): void => {
   const logDir = path.dirname(filePath);
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
   }
-
   const logFormat = winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.printf(({ timestamp, level, message, module }) => {
@@ -39,7 +47,6 @@ export const configureLogging = (options: LoggingOptions): void => {
       return `${timestamp} ${level.toUpperCase().padEnd(5)} ${mod} ${message}`;
     }),
   );
-
   rootLogger.configure({
     level,
     transports: [
@@ -54,6 +61,10 @@ export const configureLogging = (options: LoggingOptions): void => {
   });
 };
 
+/**
+ * Creates a logger instance for a specific module.
+ * @param moduleName The name of the module to include in log messages.
+ */
 export const createLogger = (moduleName: string): Logger => {
   const log = (level: LogLevel, message: string): void => {
     rootLogger.log(level, message, { module: moduleName });

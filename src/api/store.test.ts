@@ -13,12 +13,7 @@ describe('createStore', () => {
 
   it('fetches resources once, caches results, and supports predicates', async () => {
     try {
-      configureLogging({
-        level: 'error',
-        filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
-        maxSize: '1m',
-        maxFiles: '1d',
-      });
+      configureLogging('error', path.join(os.tmpdir(), 'huetemps', 'test.log'), '1m', '1d');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (!message.includes('already been configured')) {

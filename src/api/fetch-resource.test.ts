@@ -12,12 +12,7 @@ describe('fetchResource', () => {
   });
 
   it('invokes predicate for each mapped item and filters results', async () => {
-    configureLogging({
-      level: 'error',
-      filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
-      maxSize: '1m',
-      maxFiles: '1d',
-    });
+    configureLogging('error', path.join(os.tmpdir(), 'huetemps', 'test.log'), '1m', '1d');
 
     const responseBody = {
       alpha: { name: 'Alpha' },
@@ -47,12 +42,7 @@ describe('fetchResource', () => {
   });
 
   it('uses defaultMapper when mapper is omitted', async () => {
-    configureLogging({
-      level: 'error',
-      filePath: path.join(os.tmpdir(), 'huetemps', 'test.log'),
-      maxSize: '1m',
-      maxFiles: '1d',
-    });
+    configureLogging('error', path.join(os.tmpdir(), 'huetemps', 'test.log'), '1m', '1d');
 
     const responseBody = {
       alpha: { name: 'Alpha' },

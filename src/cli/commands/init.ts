@@ -11,6 +11,7 @@ export const init = () => {
   const program = new Command()
     .name('huetemps')
     .description('Control Hue lights from the terminal')
+    .option('-c, --config <path>', 'Path to config file')
     .version(CLI_VERSION)
     .showHelpAfterError()
     .action(function (this: Command) {

@@ -1,18 +1,22 @@
 import { CommanderError } from 'commander';
 import { createApiClientProvider, createStore } from '../api/index.js';
-import { loadConfig } from '../shared/config.js';
+import { loadConfig, resolveConfigPath } from '../shared/config.js';
 import { createConnectionLoader } from '../shared/connection.js';
 import { configureLogging, createLogger } from '../shared/logger.js';
 import * as commands from './commands/index.js';
 
 const logger = createLogger('cli.main');
 
-const CONFIG_PATH = 'config.yaml';
-
 export const main = async (argv: string[]) => {
   try {
-    const config = loadConfig(CONFIG_PATH);
-    configureLogging(config.logging);
+    const configPath = resolveConfigPath(argv);
+    const config = loadConfig(configPath);
+    configureLogging(
+      config.logging.level,
+      config.logging.filePath,
+      config.logging.maxSize,
+      config.logging.maxFiles,
+    );
 
     logger.info('Starting HueTemps CLI');
     const connectionLoader = createConnectionLoader(config);
