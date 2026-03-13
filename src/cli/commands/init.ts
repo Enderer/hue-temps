@@ -1,10 +1,9 @@
 import { Command } from 'commander';
+import { CLI_VERSION } from '../../shared/version.js';
 import { renderSplash } from '../splash.js';
-import { CLI_VERSION } from './version.js';
 
 const SPLASH_START = 150;
 const SPLASH_END = 440;
-const SPLASH_WIDTH = 69;
 const SPLASH_OFFSET = 20;
 
 export const init = () => {
@@ -15,7 +14,7 @@ export const init = () => {
     .version(CLI_VERSION)
     .showHelpAfterError()
     .action(function (this: Command) {
-      const splash = renderSplash(SPLASH_WIDTH, SPLASH_START, SPLASH_END, SPLASH_OFFSET);
+      const splash = renderSplash(SPLASH_START, SPLASH_END, SPLASH_OFFSET);
       console.log(splash);
       this.outputHelp();
     })

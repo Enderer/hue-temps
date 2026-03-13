@@ -1,5 +1,8 @@
 import chalk from 'chalk';
 import * as color from '../shared/color.js';
+import { CLI_VERSION } from '../shared/version.js';
+
+const VERSION_OFFSET = 2;
 
 const TITLE_LINES = [
   '╔════════════════════════════════════════════════════════════════════╗',
@@ -17,21 +20,21 @@ const TITLE_LINES = [
   '╚════════════════════════════════════════════════════════════════════╝',
 ];
 
-export const TITLE = TITLE_LINES.join('\n');
-
 /**
  * Generate a colorful splash screen with the app title
  */
-export const renderSplash = (
-  width: number,
-  miredStart: number,
-  miredEnd: number,
-  offset: number,
-): string => {
-  const splash = TITLE;
+export const renderSplash = (miredStart: number, miredEnd: number, offset: number): string => {
+  // Add the version number to the title
+  const versionLength = CLI_VERSION.length + 3;
+  const lines = [...TITLE_LINES];
+  const vStart = -(versionLength + VERSION_OFFSET);
+  const vEnd = -VERSION_OFFSET;
+  lines[0] = lines[0].slice(0, vStart) + ` v${CLI_VERSION} ` + lines[0].slice(vEnd);
+  const width = lines[0].length;
+  const splash = lines.join('\n');
   const bar = renderBar(width, miredStart, miredEnd, offset);
   const coloredSplash = colorizeText(width, miredStart, miredEnd, offset, splash);
-  return `${coloredSplash} \n ${bar}\n`;
+  return `${coloredSplash} \n${bar}\n`;
 };
 
 /**
