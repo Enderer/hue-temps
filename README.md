@@ -1,5 +1,10 @@
 # HueTemps
 
+[![GitHub](https://img.shields.io/badge/GitHub-Code-232323.svg?style=flat&logo=github&logoColor=white)](https://github.com/Enderer/hue-temps)
+[![npm](https://img.shields.io/npm/v/huetemps)](https://www.npmjs.com/package/huetemps)
+[![Build](https://img.shields.io/github/actions/workflow/status/Enderer/hue-temps/build.yml?branch=main)](https://github.com/Enderer/hue-temps/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-232323)](https://github.com/Enderer/hue-temps/blob/main/LICENSE)
+
 ![HueTemps splash](https://raw.githubusercontent.com/Enderer/hue-temps/main/assets/readme-splash.svg)
 
 Practical command-line control for your Philips Hue home.
