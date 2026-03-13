@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import { afterEach, describe, it, vi } from 'vitest';
 
 import { init } from './init.js';
-import { CLI_VERSION } from './version.js';
+import { CLI_VERSION } from '../../shared/version.js';
 import { renderSplash } from '../splash.js';
 
 const SPLASH_START = 150;

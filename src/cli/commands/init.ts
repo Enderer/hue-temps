@@ -1,6 +1,6 @@
 import { Command } from 'commander';
+import { CLI_VERSION } from '../../shared/version.js';
 import { renderSplash } from '../splash.js';
-import { CLI_VERSION } from './version.js';
 
 const SPLASH_START = 150;
 const SPLASH_END = 440;
