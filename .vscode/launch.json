@@ -17,7 +17,7 @@
       "type": "node",
       "request": "launch",
       "name": "Debug REPL",
-      "program": "${workspaceFolder}/dist/src/cli/index.js",
+      "program": "${workspaceFolder}/dist/src/temps/times.js",
       "preLaunchTask": "npm: build",
       "console": "integratedTerminal"
     },

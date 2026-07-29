@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import * as color from '../shared/color.js';
-import { CLI_VERSION } from '../shared/version.js';
+import * as color from './color.js';
+import { CLI_VERSION } from './version.js';
 
 const VERSION_OFFSET = 2;
 
@@ -22,6 +22,9 @@ const TITLE_LINES = [
 
 /**
  * Generate a colorful splash screen with the app title
+ * @param miredStart Color value express in mired scale at the start of the gradient
+ * @param miredEnd Color value express in mired scale at the end of the gradient
+ * @param offset Offset number of characters to start the gradient transition
  */
 export const renderSplash = (miredStart: number, miredEnd: number, offset: number): string => {
   // Add the version number to the title

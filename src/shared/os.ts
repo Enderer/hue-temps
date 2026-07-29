@@ -11,6 +11,11 @@ const localAppData = (): string => {
   return process.env.LOCALAPPDATA ?? path.join(os.homedir(), 'AppData', 'Local');
 };
 
+/**
+ * Get the default path for the config file based on the operating system.
+ * @param appId Name the app is installed under
+ * @param appDirWindows Directory in Windows AppData\Local the app is installed under
+ */
 export const defaultConfigPath = (
   appId: string,
   appDirWindows: string,
@@ -31,6 +36,11 @@ export const defaultConfigPath = (
   }
 };
 
+/**
+ * Get the default path for the log file based on the operating system.
+ * @param appId Name the app is installed under
+ * @param appDirWindows Directory in Windows AppData\Local the app is installed under
+ */
 export const defaultLogPath = (appId: string, appDirWindows: string): string => {
   switch (process.platform) {
     case 'darwin':

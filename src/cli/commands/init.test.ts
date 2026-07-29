@@ -4,11 +4,10 @@ import { afterEach, describe, it, vi } from 'vitest';
 
 import { init } from './init.js';
 import { CLI_VERSION } from '../../shared/version.js';
-import { renderSplash } from '../splash.js';
+import { renderSplash } from '../../shared/splash.js';
 
 const SPLASH_START = 150;
 const SPLASH_END = 440;
-const SPLASH_WIDTH = 69;
 const SPLASH_OFFSET = 20;
 
 describe('init root command', () => {
@@ -108,10 +107,7 @@ describe('init root command', () => {
     await program.parseAsync([], { from: 'user' });
 
     assert.equal(logSpy.mock.calls.length, 1);
-    assert.equal(
-      logSpy.mock.calls[0][0],
-      renderSplash(SPLASH_WIDTH, SPLASH_START, SPLASH_END, SPLASH_OFFSET),
-    );
+    assert.equal(logSpy.mock.calls[0][0], renderSplash(SPLASH_START, SPLASH_END, SPLASH_OFFSET));
     assert.equal(outputHelpSpy.mock.calls.length, 1);
   });
 

@@ -1,7 +1,13 @@
 # logging:
-#   level: info # debug | info | warn | error
-#   file: huetemps.log # absolute or relative to this config file
-#   maxSize: 10m # rotate after this size
-#   maxFiles: 5 # number of rotated files to keep
+#   level: info           # debug | info | warn | error
+#   file: huetemps.log    # absolute or relative to this config file
+#   maxSize: 10m          # rotate after this size
+#   maxFiles: 5           # number of rotated files to keep
 # temps:
-#   zoneName: Hue Temps # All lights in this zone will be set to correct temp
+#   zoneName: Hue Temps   # All lights in this zone will be set to correct temp
+#   lat: 42.35843         # Latitude of current location
+#   long: -71.05977       # Longitude of current location
+#   day: 4000             # Daylight temp in Kelvin
+#   evening: 3000         # Evening temp in Kelvin
+#   night: 2700           # Night temp in Kelvin
+#   transition: 60        # Transition time before and after sunset/sunrise in minutes
