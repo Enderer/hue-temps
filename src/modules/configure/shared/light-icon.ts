@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { Light } from '../api/index.js';
+import { Light } from '../../api/index.js';
 import * as colors from './color.js';
 
 const BULB_CHAR_ON = '██';

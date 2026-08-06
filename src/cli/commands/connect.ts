@@ -1,6 +1,6 @@
 import { Argument, Command } from 'commander';
-import { ConnectionLoader } from '../../shared/connection.js';
-import { createLogger } from '../../shared/logger.js';
+import { ConnectionLoader } from '../../modules/configure/shared/connection.js';
+import { createLogger } from '../../modules/configure/shared/logger.js';
 
 const logger = createLogger('commands.connect');
 

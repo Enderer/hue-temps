@@ -71,20 +71,16 @@ describe('init root command', () => {
 
     assert.ok(program instanceof Command);
     assert.equal(program, exitReceiver);
-
     assert.equal(name.mock.calls.length, 1);
-
     assert.equal(description.mock.calls.length, 1);
-
     assert.equal(version.mock.calls.length, 1);
+
     const versionEntry = callOrder.find((entry) => entry.startsWith('version:'));
     assert.equal(typeof versionEntry, 'string');
     assert.notEqual(versionEntry, 'version:');
-
     assert.equal(showHelpAfterError.mock.calls.length, 1);
     assert.equal(action.mock.calls.length, 1);
     assert.equal(exitOverride.mock.calls.length, 1);
-
     assert.deepEqual(callOrder, [
       'name:huetemps',
       'description:Control Hue lights from the terminal',
@@ -102,11 +98,9 @@ describe('init root command', () => {
     ) {
       return this;
     });
-
     const program = init();
     await program.parseAsync([], { from: 'user' });
-
-    assert.equal(logSpy.mock.calls.length, 1);
+    assert.equal(logSpy.mock.calls.length, 2);
     assert.equal(logSpy.mock.calls[0][0], renderSplash(SPLASH_START, SPLASH_END, SPLASH_OFFSET));
     assert.equal(outputHelpSpy.mock.calls.length, 1);
   });

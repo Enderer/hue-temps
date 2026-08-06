@@ -11,3 +11,23 @@
 #   evening: 3000         # Evening temp in Kelvin
 #   night: 2700           # Night temp in Kelvin
 #   transition: 60        # Transition time before and after sunset/sunrise in minutes
+
+configure:
+  rules:
+  - { sensor: 117, group: 4, side: 'left' }        # Office (Switch)
+
+  - { sensor: 165, group: 15, side: 'left' }       # Dining Room - Wall (Switch)
+
+  - { sensor: 113, group: 19, side: 'left' }       # Living Room - Floor (Switch)
+  - { sensor: 110, group: 11, side: 'right' }      # Living Room - Table (Switch)
+  - { sensor: 110, light: 8, side: 'left' }        # Living Room - Window (Switch)
+  - { sensor: 137, light: 29, bri: 1 }             # Living Room - Filament (Button)
+
+  - { sensor: 115, group: 2, side: 'right' }       # Guest Bedroom - Table (Switch)
+  - { sensor: 106, group: 2 }                      # Guest Bedroom - Table (Button)
+
+  - { sensor: 161, group: 21, side: 'right' }      # Master Bedroom - Left (Switch)
+  - { sensor: 160, group: 83, side: 'right' }      # Master Bedroom - Right (Switch)
+  - { sensor: 74, group: 83 }                      # Master Bedroom - Table (Button)
+
+  - { sensor: 134, light: 11, side: 'right' }      # Nursery (Switch)

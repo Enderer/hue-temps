@@ -1,8 +1,8 @@
 import { CommanderError } from 'commander';
-import { createApiClientProvider, createStore } from '../api/index.js';
-import { loadConfig, resolveConfigPath } from '../shared/config.js';
-import { createConnectionLoader } from '../shared/connection.js';
-import { configureLogging, createLogger } from '../shared/logger.js';
+import { createApiClientProvider, createStore } from '../modules/api/index.js';
+import { loadConfig, resolveConfigPath } from '../modules/configure/shared/config.js';
+import { createConnectionLoader } from '../modules/configure/shared/connection.js';
+import { configureLogging, createLogger } from '../modules/configure/shared/logger.js';
 import * as commands from './commands/index.js';
 
 const logger = createLogger('cli.main');

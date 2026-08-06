@@ -1,5 +1,5 @@
 import { Argument } from 'commander';
-import { Store } from '../../api/index.js';
+import { Store } from '../../modules/api/index.js';
 import { ListTarget, listTargets } from './list.js';
 
 export const init = (store: Store, program: any, zoneName: string) => {

@@ -1,6 +1,7 @@
 import { ApiClientProvider } from './client.js';
 import { Group, mapGroup } from './fetch-groups.js';
 import { Light, mapLight } from './fetch-lights.js';
+import { Link, mapLink } from './fetch-link.js';
 import { fetch, Fetcher, Filter, Mapper, Resource } from './fetch-resource.js';
 import { mapSensors as mapSensor, Sensor } from './fetch-sensors.js';
 
@@ -11,16 +12,18 @@ export interface Store {
   lights: Fetcher<Light>;
   sensors: Fetcher<Sensor>;
   groups: Fetcher<Group>;
+  links: Fetcher<Link>;
   apiProvider: ApiClientProvider;
 }
 
-export type StoreKey = 'lights' | 'sensors' | 'groups';
+export type StoreKey = 'lights' | 'sensors' | 'groups' | 'resourcelinks';
 
 export const createStore = (apiProvider: ApiClientProvider): Store => {
   const lights = createResource<Light>(apiProvider, 'lights', mapLight);
   const sensors = createResource<Sensor>(apiProvider, 'sensors', mapSensor);
   const groups = createResource<Group>(apiProvider, 'groups', mapGroup);
-  return { lights, sensors, groups, apiProvider };
+  const links = createResource<Resource>(apiProvider, 'resourcelinks', mapLink);
+  return { lights, sensors, groups, links, apiProvider };
 };
 
 /**

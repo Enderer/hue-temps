@@ -1,4 +1,4 @@
-import { createLogger } from '../shared/logger.js';
+import { createLogger } from '../configure/shared/logger.js';
 import { ApiClientProvider } from './client.js';
 
 const logger = createLogger('api.fetchResource');

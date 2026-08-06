@@ -2,8 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { configTemplate, getConfigPath, HueTempsConfig } from '../../shared/config.js';
-import { createLogger } from '../../shared/logger.js';
+import {
+  configTemplate,
+  getConfigPath,
+  HueTempsConfig,
+} from '../../modules/configure/shared/config.js';
+import { createLogger } from '../../modules/configure/shared/logger.js';
 
 const logger = createLogger('commands.config');
 

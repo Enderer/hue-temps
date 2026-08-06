@@ -1,8 +1,8 @@
 import { Argument } from 'commander';
 import { getBorderCharacters, table } from 'table';
-import { Store } from '../../api/index.js';
-import { lightIcon } from '../../shared/light-icon.js';
-import { createLogger } from '../../shared/logger.js';
+import { Store } from '../../modules/api/index.js';
+import { lightIcon } from '../../modules/configure/shared/light-icon.js';
+import { createLogger } from '../../modules/configure/shared/logger.js';
 
 const logger = createLogger('commands.list');
 
@@ -47,7 +47,7 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
     logger.debug('List sensors');
     const sensors = await store.sensors();
     const data = sensors.map((s) => [s.id, '', s.name, s.productName]);
-    data.sort((a, b) => a[1].localeCompare(b[1]));
+    data.sort((a, b) => a[1].localeCompare(b[1]) || a[2].localeCompare(b[2]));
     outputs['sensors'] = data;
   }
 
@@ -55,7 +55,9 @@ export const list = (zoneName: string, store: Store) => async (target: ListTarge
     logger.debug('List groups');
     const groups = await store.groups();
     const data = groups.map((g) => [g.id, '', g.name, g.type]);
-    data.sort((a, b) => a[2].localeCompare(b[2]) || a[0].localeCompare(b[0]));
+    data.sort(
+      (a, b) => a[3].localeCompare(b[3]) || a[2].localeCompare(b[2]) || a[0].localeCompare(b[0]),
+    );
     outputs['groups'] = data;
   }
 

@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { renderSplash } from '../../shared/splash.js';
-import { CLI_VERSION } from '../../shared/version.js';
+import { renderSplash } from '../../modules/configure/shared/splash.js';
+import { CLI_VERSION } from '../../modules/configure/shared/version.js';
 
 /** Color temp the gradient begins at */
 const SPLASH_START_MIRED = 150;

@@ -1,6 +1,6 @@
 import got, { Got } from 'got';
-import { ConnectionLoader } from '../shared/connection.js';
-import { createLogger } from '../shared/logger.js';
+import { ConnectionLoader } from '../configure/shared/connection.js';
+import { createLogger } from '../configure/shared/logger.js';
 
 const logger = createLogger('api.client');
 

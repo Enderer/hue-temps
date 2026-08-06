@@ -1,7 +1,7 @@
 import { Argument } from 'commander';
-import { Light } from '../../api/fetch-lights.js';
-import { Store } from '../../api/store.js';
-import { createLogger } from '../../shared/logger.js';
+import { Light } from '../../modules/api/fetch-lights.js';
+import { Store } from '../../modules/api/store.js';
+import { createLogger } from '../../modules/configure/shared/logger.js';
 
 const logger = createLogger('commands.alert');
 
